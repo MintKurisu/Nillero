@@ -1,6 +1,7 @@
-﻿using Nillero.Core.Domain.Entities.Social;
+﻿using Microsoft.EntityFrameworkCore;
+using Nillero.Core.Domain.Entities.Notifications;
+using Nillero.Core.Domain.Entities.Social;
 using Nillero.Infrastructure.Identity.Entities;
-using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace Nillero.Infrastructure.Persistence.Contexts
@@ -15,6 +16,10 @@ namespace Nillero.Infrastructure.Persistence.Contexts
         public DbSet<PostReaction> PostReactions { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+
+        // Notifications
+
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

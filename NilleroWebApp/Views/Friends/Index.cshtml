@@ -1,0 +1,97 @@
+﻿@model FriendsPageViewModel
+@{
+    ViewData["Title"] = "Friends";
+}
+
+<div class="nl-friends-page">
+    <header class="nl-friends-page__header">
+        <h1 class="nl-friends-page__title">Friends</h1>
+        <div class="nl-tabs" role="tablist" aria-label="Friends views">
+            <button type="button"
+                    class="nl-tabs__trigger nl-tabs__trigger--active"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="nl-panel-feed"
+                    data-tab-target="nl-panel-feed">
+                Feed
+            </button>
+            <button type="button"
+                    class="nl-tabs__trigger"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="nl-panel-grid"
+                    data-tab-target="nl-panel-grid">
+                Friends
+                <span class="nl-tabs__count">@Model.Friends.Count</span>
+            </button>
+        </div>
+    </header>
+
+    <section id="nl-panel-feed" class="nl-tabs__panel nl-tabs__panel--active" role="tabpanel">
+        @if (!Model.FriendsPosts.Any())
+        {
+            <div class="nl-friends-empty">
+                <i class="ph ph-users-three nl-friends-empty__icon" aria-hidden="true"></i>
+                <p class="nl-friends-empty__text">
+                    Nothing here yet. Posts from your friends will show up as they share.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="nl-friends-feed">
+                @foreach (var post in Model.FriendsPosts)
+                {
+                    @await Html.PartialAsync("_PostCard", post, new ViewDataDictionary(ViewData)
+                    {
+                        ["TargetController"] = "Friends"
+                    })
+                 }
+            </div>
+        }
+    </section>
+
+    <section id="nl-panel-grid" class="nl-tabs__panel" role="tabpanel" hidden>
+        @if (!Model.Friends.Any())
+        {
+            <div class="nl-friends-empty">
+                <i class="ph ph-user-plus nl-friends-empty__icon" aria-hidden="true"></i>
+                <p class="nl-friends-empty__text">You haven't connected with anyone yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="nl-friends-grid">
+                @foreach (var friend in Model.Friends)
+                {
+                    <a class="nl-friend-card"
+                       asp-controller="Friends"
+                       asp-action="UserPosts"
+                       asp-route-userId="@friend.UserId">
+                        <span class="nl-friend-card__avatar">
+                            @if (!string.IsNullOrEmpty(friend.ProfilePicture))
+                            {
+                                <img src="@friend.ProfilePicture" alt="@friend.UserName" />
+                            }
+                            else
+                            {
+                                <i class="ph ph-user" aria-hidden="true"></i>
+                            }
+                        </span>
+                        <span class="nl-friend-card__name">@friend.UserName</span>
+                    </a>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+
+@section Head {
+    <link rel="stylesheet" href="~/css/nillero-feed.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/nillero-friends.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/nillero-friends.js" asp-append-version="true"></script>
+}

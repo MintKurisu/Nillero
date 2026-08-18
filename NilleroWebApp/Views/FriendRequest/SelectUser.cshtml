@@ -1,0 +1,163 @@
+﻿@model List<AvailableUserViewModel>
+@{
+    ViewData["Title"] = "Add friend";
+    ViewData["ActiveNav"] = "friends";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string searchTerm = ViewBag.SearchTerm ?? "";
+}
+
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a asp-controller="FriendRequest" asp-action="Index"
+           class="nl-icon-btn" aria-label="Back to requests">
+            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+        </a>
+        <h1 class="nl-page-header__title" style="margin-bottom:0;">Add friend</h1>
+    </div>
+</div>
+
+<div class="nl-feed" style="padding: 20px 20px 48px;">
+
+    <!-- Search bar -->
+    <form asp-controller="FriendRequest"
+          asp-action="SelectUser"
+          method="get"
+          class="nl-su-search"
+          role="search">
+        <div class="nl-search" style="max-width:100%;">
+            <i class="ph ph-magnifying-glass nl-search__icon" aria-hidden="true"></i>
+            <input type="search"
+                   name="searchTerm"
+                   value="@searchTerm"
+                   class="nl-search__input"
+                   placeholder="Search by name or username…"
+                   aria-label="Search users"
+                   autofocus />
+        </div>
+        <button type="submit" class="nl-btn nl-btn--primary">
+            Search
+        </button>
+    </form>
+
+    <!-- TempData flash messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="nl-auth-flash nl-auth-flash--error" role="alert" style="max-width:100%; margin-bottom:16px;">
+            <i class="ph-fill ph-warning-circle" aria-hidden="true"></i>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
+    <!-- Results -->
+    @if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        if (Model == null || !Model.Any())
+        {
+            <div class="nl-empty-state nl-reveal" style="padding: 40px 24px;">
+                <div class="nl-empty-state__icon" aria-hidden="true">
+                    <i class="ph ph-user-circle-dashed"></i>
+                </div>
+                <h2 class="nl-empty-state__title">No users found</h2>
+                <p class="nl-empty-state__body">
+                    No one matching "<strong>@searchTerm</strong>" is available to add.
+                </p>
+            </div>
+        }
+        else
+        {
+            <p class="nl-text-meta" style="margin-bottom:12px;">
+                @Model.Count @(Model.Count == 1 ? "person" : "people") found
+            </p>
+
+            <div class="nl-su-list" role="list">
+                @foreach (var user in Model)
+                {
+                    <div class="nl-fr-card nl-reveal" role="listitem">
+
+                        <!-- Avatar -->
+                        @if (!string.IsNullOrWhiteSpace(user.ProfilePicture))
+                        {
+                            <img src="@user.ProfilePicture"
+                                 alt="@user.FullName"
+                                 class="nl-avatar nl-avatar--lg"
+                                 loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="nl-avatar nl-avatar--lg nl-avatar--fallback" aria-hidden="true">
+                                <i class="ph-fill ph-user" style="font-size:22px;"></i>
+                            </div>
+                        }
+
+                        <!-- Info -->
+                        <div class="nl-fr-card__info">
+                            <span class="nl-fr-card__name">@user.FullName</span>
+                            <span class="nl-fr-card__handle">@@@user.UserName</span>
+                            @if (user.MutualFriendsCount > 0)
+                            {
+                                <span class="nl-fr-card__mutual">
+                                    <i class="ph ph-users" aria-hidden="true"></i>
+                                    @user.MutualFriendsCount mutual @(user.MutualFriendsCount == 1 ? "friend" : "friends")
+                                </span>
+                            }
+                        </div>
+
+                        <!-- Send request form -->
+                        <div class="nl-fr-card__actions">
+                            <form asp-controller="FriendRequest"
+                                  asp-action="SendRequest"
+                                  method="post"
+                                  style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="selectedUserId" value="@user.UserId" />
+                                <button type="submit"
+                                        class="nl-btn nl-btn--primary nl-btn--sm"
+                                        aria-label="Send friend request to @user.FullName">
+                                    <i class="ph ph-user-plus" aria-hidden="true"></i>
+                                    Add
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <!-- Idle state — no search performed yet -->
+        <div class="nl-empty-state nl-reveal" style="padding: 40px 24px;">
+            <div class="nl-empty-state__icon" aria-hidden="true">
+                <i class="ph ph-magnifying-glass"></i>
+            </div>
+            <h2 class="nl-empty-state__title">Find people you know</h2>
+            <p class="nl-empty-state__body">
+                Search by name or username to send a friend request.
+            </p>
+        </div>
+    }
+
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-friendrequests.css"
+          asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                    <text>
+                    if (window.Nillero && window.Nillero.toast) {
+                        window.Nillero.toast('@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'"))', 'success');
+                    }
+                    </text>
+            }
+        })();
+    </script>
+}

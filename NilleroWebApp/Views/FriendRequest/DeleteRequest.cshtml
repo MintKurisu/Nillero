@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Cancel friend request";
+    ViewData["ActiveNav"] = "friends";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int requestId = (int)(ViewBag.RequestId ?? 0);
+    string receiverUserName = ViewBag.ReceiverUserName ?? "";
+}
+
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a asp-controller="FriendRequest" asp-action="Index"
+           class="nl-icon-btn" aria-label="Back to requests">
+            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+        </a>
+        <h1 class="nl-page-header__title" style="margin-bottom:0;">Cancel request</h1>
+    </div>
+</div>
+
+<div class="nl-feed" style="padding: 24px 20px;">
+    <div class="nl-fr-confirm-card nl-card">
+
+        <div class="nl-fr-confirm-card__hero nl-fr-confirm-card__hero--neutral">
+            <i class="ph-fill ph-paper-plane-tilt" aria-hidden="true"></i>
+        </div>
+
+        <div class="nl-fr-confirm-card__body">
+            <h2 class="nl-fr-confirm-card__title">Cancel this request?</h2>
+            <p class="nl-fr-confirm-card__text">
+                Your friend request to <strong>@@@receiverUserName</strong> will be
+                withdrawn. You can send a new request at any time.
+            </p>
+        </div>
+
+        <div class="nl-fr-confirm-card__actions">
+            <a asp-controller="FriendRequest" asp-action="Index"
+               class="nl-btn nl-btn--outline">
+                Keep request
+            </a>
+            <form asp-controller="FriendRequest"
+                  asp-action="DeleteConfirmed"
+                  asp-route-id="@requestId"
+                  method="post"
+                  style="display:inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="nl-btn nl-btn--danger">
+                    <i class="ph-fill ph-trash" aria-hidden="true"></i>
+                    Yes, cancel it
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-friendrequests.css"
+          asp-append-version="true" />
+}

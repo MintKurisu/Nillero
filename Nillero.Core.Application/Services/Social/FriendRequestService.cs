@@ -1,11 +1,16 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Nillero.Core.Application.Dtos.Notifications;
 using Nillero.Core.Application.Dtos.Social;
+using Nillero.Core.Application.Interfaces.Notifications;
 using Nillero.Core.Application.Interfaces.Social;
 using Nillero.Core.Application.Services.Base;
+using Nillero.Core.Domain.Common.Enum;
 using Nillero.Core.Domain.Common.Enum.Social;
+using Nillero.Core.Domain.Entities.Notifications;
 using Nillero.Core.Domain.Entities.Social;
+using Nillero.Core.Domain.Interfaces.Notifications;
 using Nillero.Core.Domain.Interfaces.Social;
-using Microsoft.EntityFrameworkCore;
 
 namespace Nillero.Core.Application.Services.Social
 {
@@ -13,16 +18,80 @@ namespace Nillero.Core.Application.Services.Social
     {
         private readonly IFriendRequestRepository _friendRequestRepository;
         private readonly IFriendshipRepository _friendshipRepository;
+        private readonly INotificationRepository _notificationRepository;
+        private readonly IRealTimeNotificationService _rtNotificationService;
         private readonly IMapper _mapper;
 
         public FriendRequestService(
             IFriendRequestRepository friendRequestRepository,
             IFriendshipRepository friendshipRepository,
+            INotificationRepository notificationRepository,
+            IRealTimeNotificationService rtNotificationService,
             IMapper mapper) : base(friendRequestRepository, mapper)
         {
             _friendRequestRepository = friendRequestRepository;
             _friendshipRepository = friendshipRepository;
+            _notificationRepository = notificationRepository;
+            _rtNotificationService = rtNotificationService;
             _mapper = mapper;
+        }
+
+        public override async Task<FriendRequestDto?> AddAsync(FriendRequestDto dto)
+        {
+            try
+            {
+                var entity = _mapper.Map<FriendRequest>(dto);
+                var returned = await _friendRequestRepository.AddAsync(entity);
+
+                if (returned == null)
+                    return null;
+
+                // Notify the receiver that they got a friend request
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(returned.ReceiverId) &&
+                        returned.ReceiverId != returned.SenderId)
+                    {
+                        var notificationDto = new NotificationDto
+                        {
+                            UserId = returned.ReceiverId,
+                            ActorUserId = returned.SenderId,
+                            Type = NotificationType.FriendRequest,
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        var notification = _mapper.Map<Notification>(notificationDto);
+                        await _notificationRepository.AddAsync(notification);
+
+                        var unreadCount = await _notificationRepository.GetUnreadCountAsync(returned.ReceiverId);
+
+                        await _rtNotificationService.SendNotificationAsync(
+                            userId: returned.ReceiverId,
+                            message: "You have a new friend request.",
+                            iconClass: "ph-fill ph-user-plus",
+                            unreadCount: unreadCount);
+                    }
+                }
+                catch (Exception notifEx)
+                {
+                    Console.WriteLine($"[Notif ERROR] {notifEx.GetType().Name}: {notifEx.Message}");
+
+                    if (notifEx.InnerException != null)
+                    {
+                        Console.WriteLine($"[Notif INNER] {notifEx.InnerException.GetType().Name}: {notifEx.InnerException.Message}");
+                    }
+
+                    Console.WriteLine(notifEx.StackTrace);
+                }
+
+                return _mapper.Map<FriendRequestDto>(returned);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddAsync: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<List<FriendRequestDto>> GetPendingReceivedRequestsAsync(string userId)
@@ -52,7 +121,7 @@ namespace Nillero.Core.Application.Services.Social
                 var query = _friendRequestRepository.GetAllQuery();
 
                 var requests = await query
-                    .Where(fr => fr.SenderId == userId)
+                    .Where(fr => fr.SenderId == userId && fr.Status == FriendRequestStatus.Pending)
                     .OrderByDescending(fr => fr.CreatedAt)
                     .ToListAsync();
 
@@ -97,6 +166,46 @@ namespace Nillero.Core.Application.Services.Social
                 };
 
                 await _friendshipRepository.AddAsync(friendship);
+
+                // Notify the sender that their request was accepted
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(request.SenderId) &&
+                        request.SenderId != request.ReceiverId)
+                    {
+                        var notificationDto = new NotificationDto
+                        {
+                            UserId = request.SenderId,
+                            ActorUserId = request.ReceiverId,
+                            Type = NotificationType.FriendAccepted,
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        var notification = _mapper.Map<Notification>(notificationDto);
+                        await _notificationRepository.AddAsync(notification);
+
+                        var unreadCount = await _notificationRepository.GetUnreadCountAsync(request.SenderId);
+
+                        await _rtNotificationService.SendNotificationAsync(
+                            userId: request.SenderId,
+                            message: "Your friend request was accepted.",
+                            iconClass: "ph-fill ph-users",
+                            unreadCount: unreadCount);
+                    }
+                }
+                catch (Exception notifEx)
+                {
+                    Console.WriteLine($"[Notif ERROR] {notifEx.GetType().Name}: {notifEx.Message}");
+
+                    if (notifEx.InnerException != null)
+                    {
+                        Console.WriteLine($"[Notif INNER] {notifEx.InnerException.GetType().Name}: {notifEx.InnerException.Message}");
+                    }
+
+                    Console.WriteLine(notifEx.StackTrace);
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -136,7 +245,6 @@ namespace Nillero.Core.Application.Services.Social
         {
             try
             {
-                // Check both conditions in a single query
                 var requestQuery = _friendRequestRepository.GetAllQuery();
                 var existingPendingRequest = await requestQuery
                     .AnyAsync(fr =>
@@ -147,7 +255,6 @@ namespace Nillero.Core.Application.Services.Social
                 if (existingPendingRequest)
                     return false;
 
-                // Check if they are already friends
                 var user1Id = string.Compare(senderId, receiverId) < 0 ? senderId : receiverId;
                 var user2Id = string.Compare(senderId, receiverId) < 0 ? receiverId : senderId;
 

@@ -1,0 +1,296 @@
+﻿@model EditProfileViewModel
+@{
+    ViewData["Title"] = "Account settings";
+    ViewData["ActiveNav"] = "profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string currentUsername = User.Identity?.Name ?? "";
+    string currentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "";
+
+    bool passwordHasError = ViewData.ModelState.ContainsKey("Password") && ViewData.ModelState["Password"]!.Errors.Any()
+                         || ViewData.ModelState.ContainsKey("ConfirmPassword") && ViewData.ModelState["ConfirmPassword"]!.Errors.Any();
+
+    bool hasServerErrors = ViewBag.hasError == true && ViewBag.Errors != null;
+}
+
+<div class="nl-page-header">
+    <h1 class="nl-page-header__title">Account settings</h1>
+</div>
+
+<div class="nl-feed" style="padding: 24px 20px 48px;">
+    <div class="nl-profile-settings-card nl-card">
+
+        <form asp-controller="Profile"
+              asp-action="Index"
+              method="post"
+              enctype="multipart/form-data"
+              novalidate>
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="CurrentProfilePicturePath" />
+
+            <!-- ── Avatar ──────────────────────────────────────── -->
+            <section class="nl-settings-section" aria-labelledby="section-avatar">
+                <h2 class="nl-settings-section__title" id="section-avatar">Profile picture</h2>
+
+                <div class="nl-avatar-edit-wrap">
+
+                    <!-- Circular avatar with hover edit overlay -->
+                    <label class="nl-avatar-edit" for="ProfilePicture" aria-label="Change profile picture">
+
+                        <!-- Current or preview image -->
+                        @if (!string.IsNullOrWhiteSpace(Model.CurrentProfilePicturePath))
+                        {
+                            <img src="@Model.CurrentProfilePicturePath"
+                                 alt="Your current profile picture"
+                                 class="nl-avatar nl-avatar--2xl nl-avatar-edit__img"
+                                 id="avatar-preview"
+                                 loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="nl-avatar nl-avatar--2xl nl-avatar--fallback nl-avatar-edit__img"
+                                 id="avatar-preview-fallback"
+                                 aria-hidden="true">
+                                <i class="ph-fill ph-user" style="font-size:40px;"></i>
+                            </div>
+                            <img src=""
+                                 alt="Your new profile picture preview"
+                                 class="nl-avatar nl-avatar--2xl nl-avatar-edit__img"
+                                 id="avatar-preview"
+                                 style="display:none;"
+                                 loading="lazy" />
+                        }
+
+                        <!-- Edit overlay -->
+                        <span class="nl-avatar-edit__overlay" aria-hidden="true">
+                            <i class="ph-fill ph-camera"></i>
+                        </span>
+
+                        <input asp-for="ProfilePicture"
+                               type="file"
+                               id="ProfilePicture"
+                               accept="image/jpeg,image/png,image/webp"
+                               class="visually-hidden"
+                               aria-label="Upload new profile picture" />
+                    </label>
+
+                    <div class="nl-avatar-edit-wrap__hint">
+                        <p class="nl-avatar-edit-wrap__hint-title">@currentUsername</p>
+                        <p class="nl-text-meta">JPG, PNG or WebP — max 5 MB</p>
+                    </div>
+
+                </div>
+            </section>
+
+            <hr class="nl-settings-divider" />
+
+            <!-- ── Personal info ──────────────────────────────── -->
+            <section class="nl-settings-section" aria-labelledby="section-info">
+                <h2 class="nl-settings-section__title" id="section-info">Personal information</h2>
+
+                <!-- Read-only context fields -->
+                <div class="nl-settings-row">
+                    <div class="nl-field">
+                        <label class="nl-label nl-label--readonly" for="readonly-username">Username</label>
+                        <div class="nl-input-readonly" id="readonly-username" aria-readonly="true">
+                            <i class="ph ph-at nl-input-readonly__icon" aria-hidden="true"></i>
+                            <span>@currentUsername</span>
+                            <i class="ph ph-lock-simple nl-input-readonly__lock" aria-label="Cannot be changed" title="Cannot be changed"></i>
+                        </div>
+                    </div>
+                    <div class="nl-field">
+                        <label class="nl-label nl-label--readonly" for="readonly-email">Email</label>
+                        <div class="nl-input-readonly" id="readonly-email" aria-readonly="true">
+                            <i class="ph ph-envelope nl-input-readonly__icon" aria-hidden="true"></i>
+                            <span>@currentEmail</span>
+                            <i class="ph ph-lock-simple nl-input-readonly__lock" aria-label="Cannot be changed" title="Cannot be changed"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editable fields -->
+                <div class="nl-settings-row">
+                    <div class="nl-field">
+                        <label asp-for="FirstName" class="nl-label">First name</label>
+                        <input asp-for="FirstName"
+                               class="nl-input @(ViewData.ModelState["FirstName"]?.Errors.Any() == true ? "is-invalid" : "")"
+                               type="text"
+                               autocomplete="given-name"
+                               placeholder="Alex" />
+                        <span asp-validation-for="FirstName" class="nl-field-error"></span>
+                    </div>
+                    <div class="nl-field">
+                        <label asp-for="LastName" class="nl-label">Last name</label>
+                        <input asp-for="LastName"
+                               class="nl-input @(ViewData.ModelState["LastName"]?.Errors.Any() == true ? "is-invalid" : "")"
+                               type="text"
+                               autocomplete="family-name"
+                               placeholder="Rivera" />
+                        <span asp-validation-for="LastName" class="nl-field-error"></span>
+                    </div>
+                </div>
+
+                <div class="nl-field">
+                    <label asp-for="Phone" class="nl-label">Phone</label>
+                    <input asp-for="Phone"
+                           class="nl-input @(ViewData.ModelState["Phone"]?.Errors.Any() == true ? "is-invalid" : "")"
+                           type="tel"
+                           autocomplete="tel"
+                           placeholder="+1 809 000 0000" />
+                    <span asp-validation-for="Phone" class="nl-field-error"></span>
+                </div>
+
+            </section>
+
+            <hr class="nl-settings-divider" />
+
+            <!-- ── Change password (collapsible) ─────────────── -->
+            <section class="nl-settings-section" aria-labelledby="section-password">
+
+                <details class="nl-password-details"
+                         id="password-details"
+                         @(passwordHasError ? "open" : "")>
+
+                    <summary class="nl-password-details__summary" id="section-password">
+                        <span class="nl-settings-section__title" style="margin:0;">
+                            Change password
+                        </span>
+                        <span class="nl-password-details__hint">Leave blank to keep current</span>
+                        <i class="ph ph-caret-right nl-password-details__caret" aria-hidden="true"></i>
+                    </summary>
+
+                    <div class="nl-password-details__body">
+
+                        <div class="nl-field">
+                            <label asp-for="Password" class="nl-label">New password</label>
+                            <div class="nl-input-group">
+                                <input asp-for="Password"
+                                       class="nl-input @(ViewData.ModelState["Password"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                       type="password"
+                                       autocomplete="new-password"
+                                       placeholder="At least 8 characters"
+                                       id="profile-password" />
+                                <button type="button"
+                                        class="nl-input-group__toggle"
+                                        aria-label="Toggle password visibility"
+                                        data-target="profile-password">
+                                    <i class="ph ph-eye" id="profile-password-icon" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="nl-field-error"></span>
+                        </div>
+
+                        <div class="nl-field" style="margin-top:16px;">
+                            <label asp-for="ConfirmPassword" class="nl-label">Confirm new password</label>
+                            <div class="nl-input-group">
+                                <input asp-for="ConfirmPassword"
+                                       class="nl-input @(ViewData.ModelState["ConfirmPassword"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                       type="password"
+                                       autocomplete="new-password"
+                                       placeholder="••••••••"
+                                       id="profile-confirm-password" />
+                                <button type="button"
+                                        class="nl-input-group__toggle"
+                                        aria-label="Toggle confirm password visibility"
+                                        data-target="profile-confirm-password">
+                                    <i class="ph ph-eye" id="profile-confirm-password-icon" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="ConfirmPassword" class="nl-field-error"></span>
+                        </div>
+
+                    </div>
+                </details>
+
+            </section>
+
+            <!-- ── Server-side error list ─────────────────────── -->
+            @if (hasServerErrors)
+            {
+                <div class="nl-auth-error-list" role="alert" style="margin: 0 0 8px;">
+                    <div class="nl-auth-error-list__title">
+                        <i class="ph-fill ph-warning-circle" aria-hidden="true"></i>
+                        <span>Could not save changes:</span>
+                    </div>
+                    <ul>
+                        @foreach (var error in (IEnumerable<string>)ViewBag.Errors)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <!-- ── Form actions ───────────────────────────────── -->
+            <div class="nl-settings-actions">
+                <button type="submit" class="nl-btn nl-btn--primary">
+                    <i class="ph-fill ph-floppy-disk" aria-hidden="true"></i>
+                    Save changes
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-profile.css"
+          asp-append-version="true" />
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        (function () {
+
+            /* ── Bridge TempData["SuccessMessage"] → Nillero toast ── */
+            @if (TempData["SuccessMessage"] != null)
+            {
+                        <text>
+                        if (window.Nillero && window.Nillero.toast) {
+                            window.Nillero.toast('@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'"))', 'success');
+                        }
+                        </text>
+            }
+
+            /* ── Password visibility toggles ── */
+            document.querySelectorAll('[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var input = document.getElementById(this.dataset.target);
+                    var icon  = document.getElementById(this.dataset.target + '-icon');
+                    if (!input || !icon) return;
+                    var hidden = input.type === 'password';
+                    input.type     = hidden ? 'text' : 'password';
+                    icon.className = hidden ? 'ph ph-eye-slash' : 'ph ph-eye';
+                    btn.setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+                });
+            });
+
+            /* ── Avatar live preview ── */
+            var fileInput       = document.getElementById('ProfilePicture');
+            var previewImg      = document.getElementById('avatar-preview');
+            var fallbackEl      = document.getElementById('avatar-preview-fallback');
+
+            if (fileInput && previewImg) {
+                fileInput.addEventListener('change', function (e) {
+                    var file = e.target.files[0];
+                    if (!file || !file.type.startsWith('image/')) return;
+
+                    var reader = new FileReader();
+                    reader.onload = function (ev) {
+                        previewImg.src          = ev.target.result;
+                        previewImg.style.display = 'block';
+                        if (fallbackEl) fallbackEl.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+        })();
+    </script>
+}

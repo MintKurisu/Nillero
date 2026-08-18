@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Accept friend request";
+    ViewData["ActiveNav"] = "friends";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int requestId = (int)(ViewBag.RequestId ?? 0);
+    string senderUserName = ViewBag.SenderUserName ?? "";
+}
+
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a asp-controller="FriendRequest" asp-action="Index"
+           class="nl-icon-btn" aria-label="Back to requests">
+            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+        </a>
+        <h1 class="nl-page-header__title" style="margin-bottom:0;">Accept request</h1>
+    </div>
+</div>
+
+<div class="nl-feed" style="padding: 24px 20px;">
+    <div class="nl-fr-confirm-card nl-card">
+
+        <!-- Icon + message -->
+        <div class="nl-fr-confirm-card__hero nl-fr-confirm-card__hero--success">
+            <i class="ph-fill ph-user-check" aria-hidden="true"></i>
+        </div>
+
+        <div class="nl-fr-confirm-card__body">
+            <h2 class="nl-fr-confirm-card__title">Accept friend request?</h2>
+            <p class="nl-fr-confirm-card__text">
+                You and <strong>@@@senderUserName</strong> will become friends and
+                see each other's posts in your feeds.
+            </p>
+        </div>
+
+        <div class="nl-fr-confirm-card__actions">
+            <a asp-controller="FriendRequest" asp-action="Index"
+               class="nl-btn nl-btn--outline">
+                Cancel
+            </a>
+            <form asp-controller="FriendRequest"
+                  asp-action="AcceptConfirmed"
+                  asp-route-id="@requestId"
+                  method="post"
+                  style="display:inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="nl-btn nl-btn--success">
+                    <i class="ph-fill ph-check" aria-hidden="true"></i>
+                    Yes, accept
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-friendrequests.css"
+          asp-append-version="true" />
+}

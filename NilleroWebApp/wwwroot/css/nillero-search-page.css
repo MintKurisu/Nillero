@@ -1,0 +1,89 @@
+﻿/* nillero-search-page.css
+   Styles specific to Views/Search/Index.cshtml.
+   Reuses nl-feed, nl-avatar, nl-reveal from nillero.css and nillero-feed.css.
+   ──────────────────────────────────────────────────────────── */
+
+/* ── Section wrapper ─────────────────────────────────────── */
+.nl-search-page-section {
+    margin-bottom: 36px;
+}
+
+.nl-search-page-section__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--nl-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--nl-text-3);
+    margin: 0 0 14px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--nl-border);
+}
+
+.nl-search-page-section__count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--nl-text-3);
+    background: var(--nl-border-faint);
+    padding: 2px 8px;
+    border-radius: var(--nl-radius-full);
+}
+
+/* ── People grid ─────────────────────────────────────────── */
+.nl-search-people-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nl-search-person-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--nl-radius-md);
+    text-decoration: none;
+    color: var(--nl-text-1);
+    transition: background var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-search-person-card:hover {
+        background: var(--nl-border-faint);
+    }
+
+.nl-search-person-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.nl-search-person-card__name {
+    font-size: var(--nl-size-sm);
+    font-weight: 500;
+    color: var(--nl-text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nl-search-person-card__handle {
+    font-size: 12px;
+    color: var(--nl-text-3);
+}
+
+.nl-search-person-card__arrow {
+    font-size: 14px;
+    color: var(--nl-text-3);
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity var(--nl-dur-fast) var(--nl-ease);
+}
+
+.nl-search-person-card:hover .nl-search-person-card__arrow {
+    opacity: 1;
+}

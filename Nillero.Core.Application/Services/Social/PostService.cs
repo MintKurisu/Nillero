@@ -29,10 +29,10 @@ namespace Nillero.Core.Application.Services.Social
             try
             {
                 var query = _postRepository.GetAllQueryWithInclude(new List<string>
-            {
-                "Comments",
-                "Reactions"
-            });
+                {
+                    "Comments",
+                    "Reactions"
+                });
 
                 var posts = await query
                     .Where(p => p.UserId == userId)
@@ -62,10 +62,10 @@ namespace Nillero.Core.Application.Services.Social
                     return new List<PostDto>();
 
                 var query = _postRepository.GetAllQueryWithInclude(new List<string>
-            {
-                "Comments",
-                "Reactions"
-            });
+                {
+                    "Comments",
+                    "Reactions"
+                });
 
                 var posts = await query
                     .Where(p => friendIds.Contains(p.UserId))
@@ -86,10 +86,10 @@ namespace Nillero.Core.Application.Services.Social
             try
             {
                 var query = _postRepository.GetAllQueryWithInclude(new List<string>
-            {
-                "Comments.Replies",
-                "Reactions"
-            });
+                {
+                    "Comments.Replies",
+                    "Reactions"
+                });
 
                 var post = await query.FirstOrDefaultAsync(p => p.Id == postId);
 
@@ -103,6 +103,24 @@ namespace Nillero.Core.Application.Services.Social
                 Console.WriteLine($"Error in GetPostWithDetailsAsync: {ex.Message}");
                 throw;
             }
+        }
+
+        public async Task<List<PostDto>> SearchPostsAsync(string searchTerm, int maxResults = 4)
+        {
+            var term = searchTerm.Trim().ToLower();
+
+            var query = _postRepository.GetAllQueryWithInclude(new List<string>
+            {
+                "Reactions"
+            });
+
+            var posts = await query
+                .Where(p => p.Content.ToLower().Contains(term))
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(maxResults)
+                .ToListAsync();
+
+            return _mapper.Map<List<PostDto>>(posts);
         }
     }
 

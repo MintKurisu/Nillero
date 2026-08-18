@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace Nillero.Infrastructure.Shared.Services
+namespace Nillero.Infrastructure.Shared.Services.Email
 {
     public class EmailService : IEmailService
     {

@@ -1,0 +1,72 @@
+﻿@model NotificationViewModel
+@{
+    var iconClass = Model.Type switch
+    {
+        NotificationType.Like => "ph-fill ph-heart",
+        NotificationType.Comment => "ph-fill ph-chat-circle",
+        NotificationType.Reply => "ph-fill ph-chat-circle",
+        NotificationType.FriendRequest => "ph-fill ph-user-plus",
+        NotificationType.FriendAccepted => "ph-fill ph-users",
+        _ => "ph-fill ph-bell"
+    };
+    string href;
+    if (Model.Type == NotificationType.FriendRequest || Model.Type == NotificationType.FriendAccepted)
+    {
+        href = Url.Action("Navigate", "Notification", new { id = Model.Id }) ?? "#";
+    }
+    else if (Model.PostId.HasValue)
+    {
+        href = Url.Action("Details", "Home", new { id = Model.PostId, commentId = Model.CommentId }) ?? "#";
+        if (Model.CommentId.HasValue)
+        {
+            href += $"#comment-{Model.CommentId}";
+        }
+    }
+    else
+    {
+        href = "#";
+    }
+    var badgeClass = Model.Type switch
+    {
+        NotificationType.Comment => "nl-notification-item__badge--comment",
+        NotificationType.Reply => "nl-notification-item__badge--comment",
+        NotificationType.Like => "nl-notification-item__badge--like",
+        NotificationType.FriendRequest => "nl-notification-item__badge--friend",
+        NotificationType.FriendAccepted => "nl-notification-item__badge--friend",
+        _ => "nl-notification-item__badge--default"
+    };
+}
+<li class="nl-notification-item @(!Model.IsRead ? "nl-notification-item--unread" : "")"
+    data-notification-id="@Model.Id">
+    <a class="nl-notification-item__link"
+       href="@href"
+       data-mark-read="@Model.Id">
+        <span class="nl-notification-item__avatar">
+            @if (!string.IsNullOrEmpty(Model.ActorAvatarUrl))
+            {
+                <img src="@Model.ActorAvatarUrl" alt="@Model.ActorUsername" />
+            }
+            else
+            {
+                <i class="ph ph-user" aria-hidden="true"></i>
+            }
+            <span class="nl-notification-item__badge @badgeClass">
+                <i class="@iconClass" aria-hidden="true"></i>
+            </span>
+        </span>
+        <span class="nl-notification-item__body">
+            <span class="nl-notification-item__message">@Model.Message</span>
+            <span class="nl-notification-item__time">@Model.GetTimeAgo()</span>
+        </span>
+        @if (!Model.IsRead)
+        {
+            <span class="nl-notification-item__dot" aria-label="Unread"></span>
+        }
+    </a>
+    <button class="nl-notification-item__delete"
+            aria-label="Delete notification"
+            data-delete-id="@Model.Id"
+            type="button">
+        <i class="ph ph-x" aria-hidden="true"></i>
+    </button>
+</li>

@@ -1,7 +1,13 @@
+using Nillero.Core.Application.Interfaces.Notifications;
+using Nillero.Core.Application.Interfaces.Presentation.Mappers;
+using Nillero.Core.Application.IOC;
 using Nillero.Infrastructure.Identity.IOC;
 using Nillero.Infrastructure.Persistence;
-using Nillero.Core.Application.IOC;
-using Nillero.Core.Application;
+using Nillero.Infrastructure.Shared.IOC;
+using Nillero.Infrastructure.Shared.Services.Presentation;
+using NilleroWebApp.Hubs;
+using NilleroWebApp.Infrastructure.Presentation;
+using NilleroWebApp.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +24,15 @@ builder.Services.AddPersistenceLayerIoc(builder.Configuration);
 builder.Services.AddApplicationLayerIoc();
 
 // Email 
-builder.Services.AddSharedLayerIoc(builder.Configuration);
+await builder.Services.AddSharedLayerIoc(builder.Configuration);
+
+//Notifications
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IRealTimeNotificationService, RealTimeNotificationService>();
+
+// Presentation Services
+builder.Services.AddScoped<IPostViewModelMapper, PostViewModelMapper>();
+builder.Services.AddScoped<INotificationViewModelMapper, NotificationViewModelMapper>();
 
 // Session
 builder.Services.AddSession(opt =>
@@ -48,5 +62,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Login}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

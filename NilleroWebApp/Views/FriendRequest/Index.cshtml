@@ -1,0 +1,214 @@
+﻿@model FriendRequestsPageViewModel
+@{
+    ViewData["Title"] = "Friend requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string? successMessage = Context.Request.Query["success"];
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="nl-alert nl-alert--success">@successMessage</div>
+}
+
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <h1 class="nl-page-header__title" style="margin-bottom:0;">Friend requests</h1>
+            @if (Model.PendingCount > 0)
+            {
+                <span class="nl-notif-page-badge" aria-label="@Model.PendingCount pending">@Model.PendingCount</span>
+            }
+        </div>
+        <a asp-controller="FriendRequest" asp-action="SelectUser" class="nl-btn nl-btn--primary nl-btn--sm">
+            <i class="ph ph-user-plus" aria-hidden="true"></i>
+            Add friend
+        </a>
+    </div>
+</div>
+
+<div class="nl-feed" style="padding-bottom: 48px;">
+
+    <!-- ── Incoming requests ──────────────────────────────────── -->
+    <section class="nl-fr-section" aria-labelledby="incoming-heading">
+        <h2 class="nl-fr-section__title" id="incoming-heading">
+            Received
+            @if (Model.PendingCount > 0)
+            {
+                <span class="nl-fr-section__count">@Model.PendingCount</span>
+            }
+        </h2>
+
+        @if (Model.PendingRequests == null || !Model.PendingRequests.Any())
+        {
+            <div class="nl-fr-empty">
+                <i class="ph ph-inbox" aria-hidden="true"></i>
+                <span>No pending requests</span>
+            </div>
+        }
+        else
+        {
+            <div class="nl-fr-list" role="list">
+                @foreach (var req in Model.PendingRequests)
+                {
+                    <div class="nl-fr-card nl-reveal" role="listitem" id="req-@req.Id">
+
+                        <!-- Avatar -->
+                        <a asp-controller="FriendRequest"
+                           asp-action="Accept"
+                           asp-route-id="@req.Id"
+                           class="nl-fr-card__avatar-link"
+                           aria-label="View @req.SenderFullName's request">
+                            @if (!string.IsNullOrWhiteSpace(req.SenderProfilePicture))
+                            {
+                                <img src="@req.SenderProfilePicture"
+                                     alt="@req.SenderFullName"
+                                     class="nl-avatar nl-avatar--lg"
+                                     loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="nl-avatar nl-avatar--lg nl-avatar--fallback" aria-hidden="true">
+                                    <i class="ph-fill ph-user" style="font-size:22px;"></i>
+                                </div>
+                            }
+                        </a>
+
+                        <!-- Info -->
+                        <div class="nl-fr-card__info">
+                            <span class="nl-fr-card__name">@req.SenderFullName</span>
+                            <span class="nl-fr-card__handle">@@@req.SenderUserName</span>
+                            @if (req.MutualFriendsCount > 0)
+                            {
+                                <span class="nl-fr-card__mutual">
+                                    <i class="ph ph-users" aria-hidden="true"></i>
+                                    @req.MutualFriendsCount mutual @(req.MutualFriendsCount == 1 ? "friend" : "friends")
+                                </span>
+                            }
+                            <time class="nl-fr-card__time"
+                                  datetime="@req.CreatedAt.ToString("o")"
+                                  title="@req.CreatedAt.ToString("MMMM d, yyyy")">
+                                @GetRelativeTime(req.CreatedAt)
+                            </time>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="nl-fr-card__actions">
+                            <a asp-controller="FriendRequest"
+                               asp-action="Accept"
+                               asp-route-id="@req.Id"
+                               class="nl-btn nl-btn--primary nl-btn--sm"
+                               aria-label="Accept request from @req.SenderFullName">
+                                <i class="ph ph-check" aria-hidden="true"></i>
+                                Accept
+                            </a>
+                            <a asp-controller="FriendRequest"
+                               asp-action="Reject"
+                               asp-route-id="@req.Id"
+                               class="nl-btn nl-btn--ghost nl-btn--sm"
+                               aria-label="Reject request from @req.SenderFullName">
+                                <i class="ph ph-x" aria-hidden="true"></i>
+                                Reject
+                            </a>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <hr class="nl-divider" style="margin: 8px 0;" />
+
+    <!-- ── Sent requests ──────────────────────────────────────── -->
+    <section class="nl-fr-section" aria-labelledby="sent-heading">
+        <h2 class="nl-fr-section__title" id="sent-heading">
+            Sent
+            @if (Model.SentRequests?.Any() == true)
+            {
+                <span class="nl-fr-section__count">@Model.SentRequests.Count</span>
+            }
+        </h2>
+
+        @if (Model.SentRequests == null || !Model.SentRequests.Any())
+        {
+            <div class="nl-fr-empty">
+                <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>
+                <span>No sent requests</span>
+            </div>
+        }
+        else
+        {
+            <div class="nl-fr-list" role="list">
+                @foreach (var req in Model.SentRequests)
+                {
+                    <div class="nl-fr-card nl-fr-card--sent nl-reveal" role="listitem">
+
+                        <!-- Avatar -->
+                        @if (!string.IsNullOrWhiteSpace(req.ReceiverProfilePicture))
+                        {
+                            <img src="@req.ReceiverProfilePicture"
+                                 alt="@req.ReceiverFullName"
+                                 class="nl-avatar nl-avatar--lg"
+                                 loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="nl-avatar nl-avatar--lg nl-avatar--fallback" aria-hidden="true">
+                                <i class="ph-fill ph-user" style="font-size:22px;"></i>
+                            </div>
+                        }
+
+                        <!-- Info -->
+                        <div class="nl-fr-card__info">
+                            <span class="nl-fr-card__name">@req.ReceiverFullName</span>
+                            <span class="nl-fr-card__handle">@@@req.ReceiverUserName</span>
+                            @if (req.MutualFriendsCount > 0)
+                            {
+                                <span class="nl-fr-card__mutual">
+                                    <i class="ph ph-users" aria-hidden="true"></i>
+                                    @req.MutualFriendsCount mutual @(req.MutualFriendsCount == 1 ? "friend" : "friends")
+                                </span>
+                            }
+                            <span class="nl-fr-card__status">
+                                <i class="ph ph-clock" aria-hidden="true"></i>
+                                Pending · @GetRelativeTime(req.CreatedAt)
+                            </span>
+                        </div>
+
+                        <!-- Cancel action -->
+                        <div class="nl-fr-card__actions">
+                            <a asp-controller="FriendRequest"
+                               asp-action="Delete"
+                               asp-route-id="@req.Id"
+                               class="nl-btn nl-btn--ghost nl-btn--sm"
+                               aria-label="Cancel request to @req.ReceiverFullName">
+                                <i class="ph ph-x" aria-hidden="true"></i>
+                                Cancel
+                            </a>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-friendrequests.css"
+          asp-append-version="true" />
+}
+
+@functions {
+    static string GetRelativeTime(DateTime utc)
+    {
+        var delta = DateTime.UtcNow - utc;
+        if (delta.TotalSeconds < 60) return "just now";
+        if (delta.TotalMinutes < 60) return $"{(int)delta.TotalMinutes}m ago";
+        if (delta.TotalHours < 24) return $"{(int)delta.TotalHours}h ago";
+        if (delta.TotalDays < 7) return $"{(int)delta.TotalDays}d ago";
+        return utc.ToString("MMM d");
+    }
+}

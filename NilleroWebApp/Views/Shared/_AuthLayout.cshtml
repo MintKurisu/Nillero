@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Nillero</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <script src="https://unpkg.com/@@phosphor-icons/web@@2.1.1/src/index.js" defer></script>
+    <link rel="stylesheet" href="~/css/nillero.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/nillero-auth.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Head", required: false)
+</head>
+
+<body class="nl-auth-body">
+
+    <div class="nl-auth-shell">
+
+        <!-- Left panel: branding -->
+        <aside class="nl-auth-brand" aria-hidden="true">
+            <div class="nl-auth-brand__inner">
+                <a href="/" class="nl-logo nl-auth-brand__logo">
+                    <span class="nl-logo__mark">N</span>
+                    <span class="nl-logo__wordmark">illero</span>
+                </a>
+                <blockquote class="nl-auth-brand__quote">
+                    <p>Share what matters.<br />Connect with who matters.</p>
+                </blockquote>
+                <div class="nl-auth-brand__decoration" aria-hidden="true"></div>
+            </div>
+        </aside>
+
+        <!-- Right panel: form -->
+        <main class="nl-auth-main" role="main">
+
+            <!-- Mobile logo (only visible < 768px) -->
+            <a href="/" class="nl-logo nl-auth-mobile-logo" aria-label="Nillero home">
+                <span class="nl-logo__mark">N</span>
+                <span class="nl-logo__wordmark">illero</span>
+            </a>
+
+            <!-- TempData flash messages -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="nl-auth-flash nl-auth-flash--success" role="status">
+                    <i class="ph-fill ph-check-circle" aria-hidden="true"></i>
+                    <span>@TempData["SuccessMessage"]</span>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="nl-auth-flash nl-auth-flash--error" role="alert">
+                    <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
+                    <span>@TempData["ErrorMessage"]</span>
+                </div>
+            }
+
+            @RenderBody()
+
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+﻿/* ============================================================
+   NILLERO — Friend Requests Module
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   SECTION HEADER
+───────────────────────────────────────────────────────── */
+.nl-fr-section {
+    padding: 20px 20px 8px;
+}
+
+.nl-fr-section__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--nl-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--nl-text-3);
+    margin: 0 0 14px;
+}
+
+.nl-fr-section__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    background: var(--nl-accent);
+    color: var(--nl-accent-fg);
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: var(--nl-radius-full);
+}
+
+/* ─────────────────────────────────────────────────────────
+   FRIEND REQUEST LIST
+───────────────────────────────────────────────────────── */
+.nl-fr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Empty state inline */
+.nl-fr-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-3);
+}
+
+    .nl-fr-empty i {
+        font-size: 16px;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   FRIEND REQUEST CARD (row)
+───────────────────────────────────────────────────────── */
+.nl-fr-card {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--nl-border-faint);
+    transition: background var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-fr-card:last-child {
+        border-bottom: none;
+    }
+
+    .nl-fr-card:hover {
+        background: rgba(250,250,248,0.6);
+    }
+
+.nl-fr-card--sent {
+    opacity: 0.92;
+}
+
+.nl-fr-card__avatar-link {
+    border-radius: var(--nl-radius-full);
+    transition: opacity var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-fr-card__avatar-link:hover {
+        opacity: 0.85;
+    }
+
+.nl-fr-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.nl-fr-card__name {
+    font-size: var(--nl-size-sm);
+    font-weight: 600;
+    color: var(--nl-text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nl-fr-card__handle {
+    font-size: var(--nl-size-xs);
+    color: var(--nl-text-3);
+}
+
+.nl-fr-card__mutual {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--nl-size-xs);
+    color: var(--nl-text-3);
+    margin-top: 1px;
+}
+
+    .nl-fr-card__mutual i {
+        font-size: 12px;
+    }
+
+.nl-fr-card__time,
+.nl-fr-card__status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--nl-size-xs);
+    color: var(--nl-text-3);
+    margin-top: 1px;
+}
+
+    .nl-fr-card__status i {
+        font-size: 12px;
+    }
+
+.nl-fr-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   CONFIRMATION CARD (Accept / Reject / Delete)
+───────────────────────────────────────────────────────── */
+.nl-fr-confirm-card {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 36px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0;
+}
+
+.nl-fr-confirm-card__hero {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--nl-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.nl-fr-confirm-card__hero--success {
+    background: var(--nl-success-dim);
+    color: var(--nl-success);
+}
+
+.nl-fr-confirm-card__hero--neutral {
+    background: var(--nl-border-faint);
+    color: var(--nl-text-2);
+}
+
+.nl-fr-confirm-card__body {
+    margin-bottom: 28px;
+}
+
+.nl-fr-confirm-card__title {
+    font-size: var(--nl-size-xl);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--nl-text-1);
+    margin: 0 0 10px;
+}
+
+.nl-fr-confirm-card__text {
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-2);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 320px;
+}
+
+.nl-fr-confirm-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SUCCESS BUTTON VARIANT
+───────────────────────────────────────────────────────── */
+.nl-btn--success {
+    background: var(--nl-success);
+    color: #fff;
+    border-color: var(--nl-success);
+}
+
+    .nl-btn--success:hover {
+        background: #3d8a5f;
+        border-color: #3d8a5f;
+        color: #fff;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   SELECT USER — SEARCH BAR ROW
+───────────────────────────────────────────────────────── */
+.nl-su-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+    .nl-su-search .nl-search {
+        flex: 1;
+    }
+
+/* Results list reuses nl-fr-card — no extra styles needed */
+.nl-su-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .nl-fr-card {
+        grid-template-columns: 44px 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .nl-fr-card__actions {
+        grid-column: 1 / -1;
+        padding-top: 4px;
+        border-top: 1px solid var(--nl-border-faint);
+        margin-top: 4px;
+    }
+
+    .nl-fr-confirm-card {
+        padding: 28px 20px 24px;
+    }
+
+    .nl-su-search {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .nl-su-search .nl-btn {
+            width: 100%;
+            justify-content: center;
+        }
+}

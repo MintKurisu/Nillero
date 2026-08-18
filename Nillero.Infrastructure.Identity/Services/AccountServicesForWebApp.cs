@@ -87,7 +87,7 @@ namespace Nillero.Infrastructure.Identity.Services
             return response;
         }
 
-        public async Task SingOutAsync()
+        public async Task SignOutAsync()
         {
             await _signInManager.SignOutAsync();
         }
@@ -442,8 +442,10 @@ namespace Nillero.Infrastructure.Identity.Services
                 query = query.Where(u => u.IsActive && u.EmailConfirmed);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
-                query = query.Where(u => u.UserName != null &&
-                                    u.UserName.Contains(searchTerm));
+                query = query.Where(u =>
+                    (u.UserName != null && u.UserName.Contains(searchTerm)) ||
+                    (u.FirstName != null && u.FirstName.Contains(searchTerm)) ||
+                    (u.LastName != null && u.LastName.Contains(searchTerm)));
 
             var users = await query.ToListAsync();
             var listUsersDto = new List<UserDto>();

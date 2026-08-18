@@ -1,0 +1,208 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="nl-auth-card" style="max-width: 460px;">
+
+    <div class="nl-auth-card__header">
+        <h1 class="nl-auth-card__title">Create your account</h1>
+        <p class="nl-auth-card__subtitle">Fill in the details below. You'll confirm your email before signing in.</p>
+    </div>
+
+    @* Server-side error list *@
+    @if (ViewBag.hasError == true && ViewBag.Errors != null)
+    {
+        <div class="nl-auth-error-list" role="alert">
+            <div class="nl-auth-error-list__title">
+                <i class="ph-fill ph-warning-circle" aria-hidden="true"></i>
+                <span>Please fix the following:</span>
+            </div>
+            <ul>
+                @foreach (var error in (IEnumerable<string>)ViewBag.Errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-controller="Login"
+          asp-action="Register"
+          method="post"
+          enctype="multipart/form-data"
+          novalidate>
+
+        @Html.AntiForgeryToken()
+
+        @* Avatar upload *@
+        <div class="nl-field" style="margin-bottom: 20px;">
+            <label class="nl-label">Profile picture <span style="color:var(--nl-text-3); font-weight:400;">(optional)</span></label>
+            <label class="nl-avatar-upload" for="ProfilePicture" aria-label="Upload profile picture">
+                <div class="nl-avatar-preview" id="avatar-preview-wrap">
+                    <i class="ph ph-user nl-avatar-preview__placeholder" id="avatar-placeholder" aria-hidden="true"></i>
+                    <img id="avatar-preview-img" src="" alt="Preview" style="display:none;" />
+                </div>
+                <div class="nl-avatar-upload__label">
+                    <strong>Upload a photo</strong>
+                    <span>JPG, PNG or WebP, up to 5 MB</span>
+                </div>
+                <input asp-for="ProfilePicture"
+                       type="file"
+                       id="ProfilePicture"
+                       accept="image/jpeg,image/png,image/webp"
+                       class="visually-hidden"
+                       aria-label="Choose profile picture" />
+            </label>
+        </div>
+
+        @* Name row *@
+        <div class="nl-auth-row">
+            <div class="nl-field">
+                <label asp-for="FirstName" class="nl-label">First name</label>
+                <input asp-for="FirstName"
+                       class="nl-input @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                       type="text"
+                       autocomplete="given-name"
+                       placeholder="Alex"
+                       autofocus />
+                <span asp-validation-for="FirstName" class="nl-field-error"></span>
+            </div>
+            <div class="nl-field">
+                <label asp-for="LastName" class="nl-label">Last name</label>
+                <input asp-for="LastName"
+                       class="nl-input @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                       type="text"
+                       autocomplete="family-name"
+                       placeholder="Rivera" />
+                <span asp-validation-for="LastName" class="nl-field-error"></span>
+            </div>
+        </div>
+
+        <div class="nl-field">
+            <label asp-for="UserName" class="nl-label">Username</label>
+            <input asp-for="UserName"
+                   class="nl-input @(ViewData.ModelState["UserName"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   type="text"
+                   autocomplete="username"
+                   placeholder="alex_rivera" />
+            <span asp-validation-for="UserName" class="nl-field-error"></span>
+        </div>
+
+        <div class="nl-field">
+            <label asp-for="Email" class="nl-label">Email address</label>
+            <input asp-for="Email"
+                   class="nl-input @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   type="email"
+                   autocomplete="email"
+                   placeholder="alex@example.com" />
+            <span asp-validation-for="Email" class="nl-field-error"></span>
+        </div>
+
+        <div class="nl-field">
+            <label asp-for="Phone" class="nl-label">
+                Phone <span style="color:var(--nl-text-3); font-weight:400;">(optional)</span>
+            </label>
+            <input asp-for="Phone"
+                   class="nl-input @(ViewData.ModelState["Phone"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   type="tel"
+                   autocomplete="tel"
+                   placeholder="+1 809 000 0000" />
+            <span asp-validation-for="Phone" class="nl-field-error"></span>
+        </div>
+
+        <div class="nl-auth-divider">or set your password</div>
+
+        <div class="nl-field">
+            <label asp-for="Password" class="nl-label">Password</label>
+            <div class="nl-input-group">
+                <input asp-for="Password"
+                       class="nl-input @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                       type="password"
+                       autocomplete="new-password"
+                       placeholder="At least 8 characters"
+                       id="reg-password" />
+                <button type="button"
+                        class="nl-input-group__toggle"
+                        aria-label="Toggle password visibility"
+                        data-target="reg-password">
+                    <i class="ph ph-eye" id="reg-password-icon" aria-hidden="true"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="nl-field-error"></span>
+        </div>
+
+        <div class="nl-field">
+            <label asp-for="ConfirmPassword" class="nl-label">Confirm password</label>
+            <div class="nl-input-group">
+                <input asp-for="ConfirmPassword"
+                       class="nl-input @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                       type="password"
+                       autocomplete="new-password"
+                       placeholder="••••••••"
+                       id="reg-confirm-password" />
+                <button type="button"
+                        class="nl-input-group__toggle"
+                        aria-label="Toggle confirm password visibility"
+                        data-target="reg-confirm-password">
+                    <i class="ph ph-eye" id="reg-confirm-password-icon" aria-hidden="true"></i>
+                </button>
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="nl-field-error"></span>
+        </div>
+
+        <div style="margin-top: 24px;">
+            <button type="submit" class="nl-btn nl-btn--primary nl-btn--lg" style="width:100%;">
+                Create account
+            </button>
+        </div>
+
+    </form>
+
+    <div class="nl-auth-footer">
+        <p class="nl-auth-footer__text">
+            Already have an account?
+            <a asp-controller="Login" asp-action="Index" class="nl-auth-link">Sign in</a>
+        </p>
+    </div>
+
+</div>
+
+@section Head {
+    <link rel="stylesheet" href="~/css/nillero-auth.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Password visibility toggles
+        document.querySelectorAll('[data-target]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(this.dataset.target);
+                var icon  = document.getElementById(this.dataset.target + '-icon');
+                var isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                icon.className = isHidden ? 'ph ph-eye-slash' : 'ph ph-eye';
+                btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+            });
+        });
+
+        // Avatar preview
+        document.getElementById('ProfilePicture').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            var reader = new FileReader();
+            reader.onload = function (ev) {
+                var img = document.getElementById('avatar-preview-img');
+                var placeholder = document.getElementById('avatar-placeholder');
+                img.src = ev.target.result;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+}

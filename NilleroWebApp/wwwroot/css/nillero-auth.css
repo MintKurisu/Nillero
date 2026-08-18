@@ -1,0 +1,426 @@
+﻿/* ============================================================
+   NILLERO — Auth Pages Stylesheet
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   AUTH SHELL — split layout
+   Left: brand panel (desktop only)
+   Right: form panel
+───────────────────────────────────────────────────────── */
+.nl-auth-body {
+    margin: 0;
+    padding: 0;
+    background: var(--nl-bg);
+    font-family: var(--nl-font);
+    min-height: 100dvh;
+}
+
+.nl-auth-shell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100dvh;
+}
+
+/* ─────────────────────────────────────────────────────────
+   LEFT BRAND PANEL
+───────────────────────────────────────────────────────── */
+.nl-auth-brand {
+    position: relative;
+    background: var(--nl-text-1);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+}
+
+.nl-auth-brand__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px;
+    width: 100%;
+}
+
+/* Logo overrides for dark background */
+.nl-auth-brand__logo .nl-logo__mark {
+    background: var(--nl-surface);
+    color: var(--nl-text-1);
+}
+
+.nl-auth-brand__logo .nl-logo__wordmark {
+    color: var(--nl-surface);
+}
+
+/* Quote */
+.nl-auth-brand__quote {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+    .nl-auth-brand__quote p {
+        font-size: clamp(1.5rem, 3vw, 2.25rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        color: var(--nl-surface);
+        margin: 0;
+        opacity: 0.92;
+    }
+
+/* Ambient decoration: a large faint circle */
+.nl-auth-brand__decoration {
+    position: absolute;
+    inset: auto -120px -120px auto;
+    width: 420px;
+    height: 420px;
+    border-radius: var(--nl-radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    pointer-events: none;
+}
+
+    .nl-auth-brand__decoration::before {
+        content: "";
+        position: absolute;
+        inset: 60px;
+        border-radius: var(--nl-radius-full);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+/* ─────────────────────────────────────────────────────────
+   RIGHT FORM PANEL
+───────────────────────────────────────────────────────── */
+.nl-auth-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+    min-height: 100dvh;
+    overflow-y: auto;
+}
+
+.nl-auth-mobile-logo {
+    display: none;
+    margin-bottom: 32px;
+    align-self: flex-start;
+}
+
+/* ─────────────────────────────────────────────────────────
+   AUTH CARD — the form container
+───────────────────────────────────────────────────────── */
+.nl-auth-card {
+    width: 100%;
+    max-width: 400px;
+}
+
+.nl-auth-card__header {
+    margin-bottom: 28px;
+}
+
+.nl-auth-card__title {
+    font-size: var(--nl-size-2xl);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--nl-text-1);
+    margin: 0 0 6px;
+    line-height: 1.2;
+}
+
+.nl-auth-card__subtitle {
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-3);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FLASH ALERTS (TempData)
+───────────────────────────────────────────────────────── */
+.nl-auth-flash {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 14px;
+    border-radius: var(--nl-radius-sm);
+    font-size: var(--nl-size-sm);
+    margin-bottom: 20px;
+}
+
+    .nl-auth-flash i {
+        font-size: 16px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+.nl-auth-flash--success {
+    background: var(--nl-success-dim);
+    color: var(--nl-success);
+    border: 1px solid rgba(74, 157, 111, 0.2);
+}
+
+.nl-auth-flash--error {
+    background: var(--nl-danger-dim);
+    color: var(--nl-danger);
+    border: 1px solid rgba(212, 87, 74, 0.2);
+}
+
+/* ─────────────────────────────────────────────────────────
+   INLINE ERROR BANNER (ViewBag.ErrorMessage)
+───────────────────────────────────────────────────────── */
+.nl-auth-error-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 10px 12px;
+    background: var(--nl-danger-dim);
+    border: 1px solid rgba(212, 87, 74, 0.2);
+    border-radius: var(--nl-radius-sm);
+    font-size: var(--nl-size-sm);
+    color: var(--nl-danger);
+    margin-bottom: 20px;
+}
+
+    .nl-auth-error-banner i {
+        font-size: 15px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+/* Multiple errors list (ViewBag.Errors) */
+.nl-auth-error-list {
+    padding: 10px 12px;
+    background: var(--nl-danger-dim);
+    border: 1px solid rgba(212, 87, 74, 0.2);
+    border-radius: var(--nl-radius-sm);
+    margin-bottom: 20px;
+}
+
+.nl-auth-error-list__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--nl-size-sm);
+    font-weight: 500;
+    color: var(--nl-danger);
+    margin-bottom: 6px;
+}
+
+.nl-auth-error-list ul {
+    margin: 0;
+    padding-left: 18px;
+    list-style: disc;
+}
+
+.nl-auth-error-list li {
+    font-size: var(--nl-size-sm);
+    color: var(--nl-danger);
+    line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────
+   AVATAR UPLOAD PREVIEW
+───────────────────────────────────────────────────────── */
+.nl-avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 1px dashed var(--nl-border);
+    border-radius: var(--nl-radius-sm);
+    cursor: pointer;
+    transition: border-color var(--nl-dur-base) var(--nl-ease), background var(--nl-dur-base) var(--nl-ease);
+}
+
+    .nl-avatar-upload:hover {
+        border-color: var(--nl-text-3);
+        background: var(--nl-border-faint);
+    }
+
+.nl-avatar-preview {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--nl-radius-full);
+    object-fit: cover;
+    background: var(--nl-border-faint);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--nl-border);
+}
+
+    .nl-avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: var(--nl-radius-full);
+    }
+
+.nl-avatar-preview__placeholder {
+    font-size: 22px;
+    color: var(--nl-text-3);
+}
+
+.nl-avatar-upload__label {
+    flex: 1;
+}
+
+    .nl-avatar-upload__label strong {
+        display: block;
+        font-size: var(--nl-size-sm);
+        font-weight: 500;
+        color: var(--nl-text-1);
+    }
+
+    .nl-avatar-upload__label span {
+        display: block;
+        font-size: var(--nl-size-xs);
+        color: var(--nl-text-3);
+        margin-top: 2px;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   FORM ROW (two cols side by side)
+───────────────────────────────────────────────────────── */
+.nl-auth-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   PASSWORD TOGGLE WRAPPER
+───────────────────────────────────────────────────────── */
+.nl-input-group {
+    position: relative;
+}
+
+    .nl-input-group .nl-input {
+        padding-right: 40px;
+    }
+
+.nl-input-group__toggle {
+    position: absolute;
+    inset: 50% 12px auto auto;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--nl-text-3);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-input-group__toggle:hover {
+        color: var(--nl-text-2);
+    }
+
+/* ─────────────────────────────────────────────────────────
+   FORM FOOTER LINKS
+───────────────────────────────────────────────────────── */
+.nl-auth-footer {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+}
+
+.nl-auth-footer__text {
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-3);
+    margin: 0;
+}
+
+.nl-auth-link {
+    color: var(--nl-text-1);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--nl-border);
+    transition: text-decoration-color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-auth-link:hover {
+        color: var(--nl-text-1);
+        text-decoration-color: var(--nl-text-1);
+    }
+
+.nl-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--nl-text-3);
+    font-size: var(--nl-size-xs);
+}
+
+    .nl-auth-divider::before,
+    .nl-auth-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--nl-border-faint);
+    }
+
+/* ─────────────────────────────────────────────────────────
+   UNAUTHORIZED MESSAGE (returnUrl redirect)
+───────────────────────────────────────────────────────── */
+.nl-auth-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--nl-accent-dim);
+    border: 1px solid rgba(200, 169, 110, 0.25);
+    border-radius: var(--nl-radius-sm);
+    font-size: var(--nl-size-sm);
+    color: #8a6c30;
+    margin-bottom: 20px;
+}
+
+    .nl-auth-notice i {
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    .nl-auth-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .nl-auth-brand {
+        display: none;
+    }
+
+    .nl-auth-main {
+        justify-content: flex-start;
+        padding: 32px 24px 48px;
+    }
+
+    .nl-auth-mobile-logo {
+        display: flex;
+    }
+
+    .nl-auth-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 380px) {
+    .nl-auth-main {
+        padding: 24px 16px 40px;
+    }
+}

@@ -1,0 +1,270 @@
+﻿@model SavePostViewModel
+@{
+    bool isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit post" : "New post";
+    ViewData["ActiveNav"] = "home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a asp-controller="Home" asp-action="Index"
+           class="nl-icon-btn"
+           aria-label="Back to feed">
+            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+        </a>
+        <h1 class="nl-page-header__title" style="margin-bottom:0;">
+            @(isEdit ? "Edit post" : "New post")
+        </h1>
+    </div>
+</div>
+
+<div class="nl-feed" style="padding: 24px 20px;">
+    <div class="nl-save-post-card nl-card">
+
+        <form asp-controller="Home"
+              asp-action="@(isEdit ? "Edit" : "Create")"
+              method="post"
+              enctype="multipart/form-data"
+              novalidate>
+
+            @Html.AntiForgeryToken()
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="Id" />
+            }
+
+            <!-- Content textarea -->
+            <div class="nl-field nl-save-post-card__field">
+                <label asp-for="Content" class="nl-label">What's on your mind?</label>
+                <textarea asp-for="Content"
+                          class="nl-textarea nl-save-post-card__textarea @(ViewData.ModelState["Content"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                          placeholder="Share something with the world…"
+                          rows="4"
+                          maxlength="1000"
+                          aria-describedby="content-count"></textarea>
+                <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                    <span asp-validation-for="Content" class="nl-field-error"></span>
+                    <span class="nl-text-meta" id="content-count" aria-live="polite"></span>
+                </div>
+            </div>
+
+            <hr class="nl-divider" style="margin: 4px 0 20px;" />
+
+            <!-- Media type toggle -->
+            <div class="nl-field nl-save-post-card__field">
+                <span class="nl-label" id="media-type-label">Media type</span>
+                <div class="nl-media-toggle" role="group" aria-labelledby="media-type-label">
+                    <button type="button"
+                            class="nl-media-toggle__btn @(Model.MediaType != "Video" ? "is-active" : "")"
+                            data-media-type="Image"
+                            aria-pressed="@(Model.MediaType != "Video" ? "true" : "false")">
+                        <i class="ph ph-image" aria-hidden="true"></i>
+                        Image
+                    </button>
+                    <button type="button"
+                            class="nl-media-toggle__btn @(Model.MediaType == "Video" ? "is-active" : "")"
+                            data-media-type="Video"
+                            aria-pressed="@(Model.MediaType == "Video" ? "true" : "false")">
+                        <i class="ph ph-youtube-logo" aria-hidden="true"></i>
+                        YouTube
+                    </button>
+                </div>
+                <!-- Hidden field carrying the selected type to the controller -->
+                <input type="hidden" asp-for="MediaType" id="MediaType" />
+            </div>
+
+            <!-- Image panel -->
+            <div class="nl-save-post-card__field nl-media-panel" id="panel-Image"
+                 @(Model.MediaType == "Video" ? "hidden" : "")>
+
+                @if (isEdit && !string.IsNullOrWhiteSpace(ViewBag.CurrentMediaPath as string) && Model.MediaType != "Video")
+                {
+                    <div class="nl-current-media">
+                        <span class="nl-label" style="margin-bottom:8px;">Current image</span>
+                        <img src="@ViewBag.CurrentMediaPath"
+                             alt="Current post image"
+                             class="nl-current-media__preview" />
+                        <p class="nl-text-meta" style="margin-top:6px;">Upload a new image below to replace it.</p>
+                    </div>
+                }
+
+                <div class="nl-field">
+                    <label asp-for="ImageFile" class="nl-label">
+                        @(isEdit ? "Replace image" : "Upload image")
+                        @if (isEdit)
+                        {
+                            <span style="color:var(--nl-text-3); font-weight:400;"> (optional)</span>
+                        }
+                    </label>
+                    <label class="nl-file-drop" for="ImageFile" id="image-drop-zone">
+                        <div class="nl-file-drop__preview" id="image-preview-wrap" hidden>
+                            <img id="image-preview" src="" alt="Selected image preview" />
+                        </div>
+                        <div class="nl-file-drop__placeholder" id="image-placeholder">
+                            <i class="ph ph-upload-simple nl-file-drop__icon" aria-hidden="true"></i>
+                            <span class="nl-file-drop__label">Click to choose or drag an image here</span>
+                            <span class="nl-file-drop__hint">JPG, PNG or WebP — max 10 MB</span>
+                        </div>
+                        <input asp-for="ImageFile"
+                               type="file"
+                               id="ImageFile"
+                               accept="image/jpeg,image/png,image/webp"
+                               class="visually-hidden"
+                               aria-label="Upload post image" />
+                    </label>
+                    <span asp-validation-for="ImageFile" class="nl-field-error"></span>
+                </div>
+            </div>
+
+            <!-- YouTube panel -->
+            <div class="nl-save-post-card__field nl-media-panel" id="panel-Video"
+                 @(Model.MediaType != "Video" ? "hidden" : "")>
+                <div class="nl-field">
+                    <label asp-for="YouTubeUrl" class="nl-label">YouTube URL</label>
+                    <input asp-for="YouTubeUrl"
+                           class="nl-input @(ViewData.ModelState["YouTubeUrl"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                           type="url"
+                           placeholder="https://www.youtube.com/watch?v=…"
+                           id="YouTubeUrl"
+                           autocomplete="off" />
+                    <span asp-validation-for="YouTubeUrl" class="nl-field-error"></span>
+                </div>
+
+                <!-- Live YouTube preview -->
+                <div class="nl-youtube-preview" id="youtube-preview" hidden>
+                    <span class="nl-label" style="margin-bottom:8px;">Preview</span>
+                    <div class="nl-post-card__media nl-post-card__media--video">
+                        <iframe id="youtube-preview-frame"
+                                src=""
+                                title="YouTube preview"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                class="nl-post-card__embed">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form actions -->
+            <div class="nl-save-post-card__actions">
+                <a asp-controller="Home" asp-action="Index" class="nl-btn nl-btn--outline">
+                    Cancel
+                </a>
+                <button type="submit" class="nl-btn nl-btn--primary">
+                    <i class="ph-fill ph-paper-plane-tilt" aria-hidden="true"></i>
+                    @(isEdit ? "Update post" : "Publish post")
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        (function () {
+
+            /* ── Content character counter ── */
+            var textarea = document.querySelector('.nl-save-post-card__textarea');
+            var counter  = document.getElementById('content-count');
+            if (textarea && counter) {
+                function updateCount() {
+                    var remaining = 1000 - textarea.value.length;
+                    counter.textContent = remaining + ' characters remaining';
+                }
+                textarea.addEventListener('input', updateCount);
+                updateCount();
+            }
+
+            /* ── Media type toggle ── */
+            var toggleBtns  = document.querySelectorAll('[data-media-type]');
+            var hiddenInput = document.getElementById('MediaType');
+
+            function switchPanel(type) {
+                document.querySelectorAll('.nl-media-panel').forEach(function (panel) {
+                    panel.hidden = true;
+                });
+                var target = document.getElementById('panel-' + type);
+                if (target) target.hidden = false;
+
+                toggleBtns.forEach(function (btn) {
+                    var active = btn.dataset.mediaType === type;
+                    btn.classList.toggle('is-active', active);
+                    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+
+                if (hiddenInput) hiddenInput.value = type;
+            }
+
+            toggleBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    switchPanel(this.dataset.mediaType);
+                });
+            });
+
+            /* ── Image file preview ── */
+            var fileInput    = document.getElementById('ImageFile');
+            var previewWrap  = document.getElementById('image-preview-wrap');
+            var previewImg   = document.getElementById('image-preview');
+            var placeholder  = document.getElementById('image-placeholder');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    var file = e.target.files[0];
+                    if (!file || !file.type.startsWith('image/')) return;
+                    var reader = new FileReader();
+                    reader.onload = function (ev) {
+                        previewImg.src    = ev.target.result;
+                        previewWrap.hidden  = false;
+                        placeholder.hidden  = true;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            /* ── YouTube live preview ── */
+            var ytInput   = document.getElementById('YouTubeUrl');
+            var ytPreview = document.getElementById('youtube-preview');
+            var ytFrame   = document.getElementById('youtube-preview-frame');
+
+            function extractYouTubeId(url) {
+                try {
+                    var u  = new URL(url);
+                    var id = u.searchParams.get('v');
+                    if (!id) {
+                        var parts = u.pathname.split('/');
+                        id = parts[parts.length - 1] || null;
+                    }
+                    return id && id.length === 11 ? id : null;
+                } catch (e) { return null; }
+            }
+
+            if (ytInput) {
+                ytInput.addEventListener('input', function () {
+                    var id = extractYouTubeId(this.value.trim());
+                    if (id) {
+                        ytFrame.src    = 'https://www.youtube.com/embed/' + id;
+                        ytPreview.hidden = false;
+                    } else {
+                        ytFrame.src    = '';
+                        ytPreview.hidden = true;
+                    }
+                });
+
+                /* Trigger preview on load if editing a video post */
+                if (ytInput.value) ytInput.dispatchEvent(new Event('input'));
+            }
+
+        })();
+    </script>
+}
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-feed.css"
+          asp-append-version="true" />
+}

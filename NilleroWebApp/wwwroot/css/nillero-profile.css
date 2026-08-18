@@ -1,0 +1,450 @@
+﻿/* ============================================================
+   NILLERO — Profile & Settings Components (unified)
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   SETTINGS CARD SHELL
+───────────────────────────────────────────────────────── */
+.nl-profile-settings-card {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+    animation: nl-settings-rise 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes nl-settings-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   PAGE SCAFFOLD — centrar todo en pantalla
+   El inline style del Razor usa padding directo en el div,
+   por eso usamos el selector de clase sin depender de él.
+───────────────────────────────────────────────────────── */
+.nl-feed {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    /* El padding inline del Razor no podemos pisarlo con clase,
+       así que lo manejamos con padding-block aquí y el inline
+       queda como está (solo afecta left/right, no centra) */
+    padding-top: 40px !important;
+    padding-bottom: 80px !important;
+}
+
+.nl-page-header {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto 20px;
+    padding: 0 4px;
+}
+
+.nl-page-header__title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--nl-text-1);
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SETTINGS SECTION
+───────────────────────────────────────────────────────── */
+.nl-settings-section {
+    padding: 32px 32px 28px;
+}
+
+.nl-settings-section__title {
+    font-size: 0.6875rem; /* 11px — categoría, no título */
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--nl-text-3);
+    margin: 0 0 24px;
+    line-height: 1;
+}
+
+.nl-settings-divider {
+    border: none;
+    border-top: 1px solid var(--nl-border-faint);
+    margin: 0;
+}
+
+/* Two-column field row */
+.nl-settings-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+    .nl-settings-row:last-child {
+        margin-bottom: 0;
+    }
+
+/* Spacing entre campos individuales */
+.nl-settings-section .nl-field {
+    margin-bottom: 18px;
+}
+
+    .nl-settings-section .nl-field:last-child {
+        margin-bottom: 0;
+    }
+
+/* Form actions bar */
+.nl-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 16px 32px 24px;
+    border-top: 1px solid var(--nl-border-faint);
+    gap: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   AVATAR EDIT COMPONENT
+───────────────────────────────────────────────────────── */
+.nl-avatar-edit-wrap {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 24px;
+    background: var(--nl-border-faint, rgba(0, 0, 0, 0.025));
+    border: 1px solid var(--nl-border-faint);
+    border-radius: 10px;
+}
+
+.nl-avatar-edit {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    border-radius: var(--nl-radius-full);
+    cursor: pointer;
+    outline: none;
+}
+
+    .nl-avatar-edit:hover .nl-avatar-edit__img,
+    .nl-avatar-edit:focus-visible .nl-avatar-edit__img {
+        filter: brightness(0.82);
+    }
+
+    .nl-avatar-edit:focus-visible {
+        box-shadow: 0 0 0 3px var(--nl-accent);
+        border-radius: var(--nl-radius-full);
+    }
+
+.nl-avatar-edit__img {
+    display: block;
+    transition: filter var(--nl-dur-base) var(--nl-ease);
+}
+
+.nl-avatar-edit__overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--nl-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(28, 28, 26, 0.42);
+    color: #fff;
+    font-size: 22px;
+    opacity: 0;
+    transition: opacity var(--nl-dur-base) var(--nl-ease);
+    pointer-events: none;
+}
+
+.nl-avatar-edit:hover .nl-avatar-edit__overlay,
+.nl-avatar-edit:focus-visible .nl-avatar-edit__overlay {
+    opacity: 1;
+}
+
+.nl-avatar-edit-wrap__hint {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.nl-avatar-edit-wrap__hint-title {
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--nl-text-1);
+    margin: 0;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+}
+
+.nl-avatar-edit-wrap .nl-text-meta {
+    font-size: 0.75rem;
+    color: var(--nl-text-3);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FIELD LABELS
+───────────────────────────────────────────────────────── */
+.nl-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--nl-text-2, #555);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.nl-label--readonly {
+    color: var(--nl-text-3);
+}
+
+/* ─────────────────────────────────────────────────────────
+   READ-ONLY INPUT DISPLAY
+───────────────────────────────────────────────────────── */
+.nl-input-readonly {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 12px;
+    background: var(--nl-border-faint);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    color: var(--nl-text-3);
+    cursor: not-allowed;
+    user-select: none;
+    overflow: hidden;
+}
+
+    .nl-input-readonly span {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+.nl-input-readonly__icon {
+    font-size: 13px;
+    flex-shrink: 0;
+    color: var(--nl-text-3);
+    opacity: 0.55;
+}
+
+.nl-input-readonly__lock {
+    font-size: 11px;
+    flex-shrink: 0;
+    color: var(--nl-border);
+    margin-left: auto;
+    opacity: 0.35;
+}
+
+/* ─────────────────────────────────────────────────────────
+   EDITABLE INPUTS
+───────────────────────────────────────────────────────── */
+.nl-input {
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    border: 1px solid var(--nl-border);
+    background: var(--nl-surface, #fff);
+    color: var(--nl-text-1);
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+    .nl-input:focus {
+        outline: none;
+        border-color: var(--nl-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--nl-accent) 18%, transparent);
+    }
+
+    .nl-input::placeholder {
+        color: var(--nl-text-3);
+        opacity: 0.7;
+    }
+
+    .nl-input.is-invalid {
+        border-color: var(--nl-error, #c0392b);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--nl-error, #c0392b) 12%, transparent);
+    }
+
+/* ─────────────────────────────────────────────────────────
+   PASSWORD COLLAPSIBLE SECTION
+───────────────────────────────────────────────────────── */
+.nl-password-details {
+    border: 1px solid var(--nl-border-faint);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+    .nl-password-details[open] {
+        border-color: var(--nl-border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+.nl-password-details__summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition: background var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-password-details__summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .nl-password-details__summary:hover {
+        background: var(--nl-border-faint);
+    }
+
+    .nl-password-details__summary .nl-settings-section__title {
+        margin: 0;
+    }
+
+.nl-password-details__hint {
+    font-size: 0.6875rem;
+    color: var(--nl-text-3);
+    margin-left: 4px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    flex-shrink: 0;
+}
+
+.nl-password-details__caret {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--nl-text-3);
+    flex-shrink: 0;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nl-password-details[open] .nl-password-details__caret {
+    transform: rotate(90deg);
+}
+
+.nl-password-details__body {
+    padding: 20px 20px 24px;
+    border-top: 1px solid var(--nl-border-faint);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+    .nl-password-details__body .nl-field {
+        margin-bottom: 0 !important;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   SERVER ERROR LIST
+───────────────────────────────────────────────────────── */
+.nl-auth-error-list {
+    margin: 0 32px !important;
+    border-radius: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SAVE BUTTON
+───────────────────────────────────────────────────────── */
+.nl-settings-actions .nl-btn--primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+    .nl-settings-actions .nl-btn--primary:hover {
+        opacity: 0.88;
+    }
+
+    .nl-settings-actions .nl-btn--primary:active {
+        transform: scale(0.975);
+    }
+
+    .nl-settings-actions .nl-btn--primary i {
+        font-size: 15px;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE — ≤ 600px
+───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .nl-settings-section {
+        padding: 24px 20px 20px;
+    }
+
+    .nl-settings-actions {
+        padding: 14px 20px 20px;
+    }
+
+    .nl-settings-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin-bottom: 0;
+    }
+
+        .nl-settings-row .nl-field {
+            margin-bottom: 14px;
+        }
+
+            .nl-settings-row .nl-field:last-child {
+                margin-bottom: 0;
+            }
+
+    .nl-avatar-edit-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .nl-page-header__title {
+        font-size: 1.2rem;
+    }
+
+    .nl-auth-error-list {
+        margin: 0 20px !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   REDUCED MOTION
+───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .nl-profile-settings-card {
+        animation: none;
+    }
+
+    .nl-input,
+    .nl-password-details,
+    .nl-password-details__caret,
+    .nl-settings-actions .nl-btn--primary {
+        transition: none;
+    }
+}

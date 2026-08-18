@@ -1,0 +1,136 @@
+﻿@model PostViewModel
+@{
+    ViewData["Title"] = "Delete post";
+    ViewData["ActiveNav"] = "home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    bool hasImage = Model.Type == PostType.Image && !string.IsNullOrWhiteSpace(Model.MediaPath);
+    bool hasVideo = Model.Type == PostType.Video && !string.IsNullOrWhiteSpace(Model.YouTubeUrl);
+
+    string? youtubeId = null;
+    if (hasVideo && Model.YouTubeUrl != null)
+    {
+        var uri = new Uri(Model.YouTubeUrl);
+        var qs = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        youtubeId = qs["v"] ?? uri.Segments.LastOrDefault()?.TrimEnd('/');
+    }
+}
+
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a asp-controller="Home" asp-action="Index"
+           class="nl-icon-btn"
+           aria-label="Cancel and go back">
+            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+        </a>
+        <h1 class="nl-page-header__title" style="margin-bottom:0;">Delete post</h1>
+    </div>
+</div>
+
+<div class="nl-feed" style="padding: 24px 20px;">
+
+    <!-- Danger notice -->
+    <div class="nl-delete-notice" role="alert">
+        <i class="ph-fill ph-warning" aria-hidden="true"></i>
+        <div>
+            <strong>This action cannot be undone.</strong>
+            <p>The post and all its comments and reactions will be permanently removed.</p>
+        </div>
+    </div>
+
+    <!-- Read-only post preview -->
+    <div class="nl-card nl-delete-preview" aria-label="Post to be deleted">
+
+        <div class="nl-post-card__header" style="padding: 16px 16px 0;">
+            @if (!string.IsNullOrWhiteSpace(Model.UserProfilePicture))
+            {
+                <img src="@Model.UserProfilePicture"
+                     alt="@Model.UserFullName"
+                     class="nl-avatar nl-avatar--md"
+                     loading="lazy" />
+            }
+            else
+            {
+                <div class="nl-avatar nl-avatar--md nl-avatar--fallback" aria-hidden="true">
+                    <i class="ph-fill ph-user"></i>
+                </div>
+            }
+            <div class="nl-post-card__meta">
+                <span class="nl-post-card__fullname">@Model.UserFullName</span>
+                <span class="nl-post-card__handle">@@@Model.UserName</span>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Content))
+        {
+            <div class="nl-post-card__content" style="padding: 12px 16px 0;">
+                <p>@Model.Content</p>
+            </div>
+        }
+
+        @if (hasImage)
+        {
+            <div class="nl-post-card__media" style="margin-top:12px;">
+                <img src="@Model.MediaPath"
+                     alt="Post image"
+                     class="nl-post-card__image"
+                     loading="lazy" />
+            </div>
+        }
+        else if (hasVideo && youtubeId != null)
+        {
+            <div class="nl-post-card__media nl-post-card__media--video" style="margin-top:12px;">
+                <iframe src="https://www.youtube.com/embed/@youtubeId"
+                        title="Post video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                        class="nl-post-card__embed">
+                </iframe>
+            </div>
+        }
+
+        <!-- Reaction stats (read-only) -->
+        <div class="nl-post-card__reactions nl-post-card__reactions--readonly"
+             style="padding: 12px 16px; border-top: 1px solid var(--nl-border-faint); margin-top:12px;">
+            <span class="nl-reaction-btn" style="pointer-events:none; cursor:default;">
+                <i class="ph ph-thumbs-up" aria-hidden="true"></i>
+                <span class="nl-reaction-btn__count">@Model.LikeCount</span>
+            </span>
+            <span class="nl-reaction-btn" style="pointer-events:none; cursor:default;">
+                <i class="ph ph-thumbs-down" aria-hidden="true"></i>
+                <span class="nl-reaction-btn__count">@Model.DislikeCount</span>
+            </span>
+            <span class="nl-reaction-comment-count">
+                <i class="ph ph-chat-circle" aria-hidden="true"></i>
+                <span>@(Model.Comments?.Count ?? 0)</span>
+            </span>
+        </div>
+
+    </div>
+
+    <!-- Confirm / cancel actions -->
+    <div class="nl-delete-actions">
+        <a asp-controller="Home" asp-action="Index" class="nl-btn nl-btn--outline">
+            Cancel
+        </a>
+        <form asp-controller="Home"
+              asp-action="DeleteConfirmed"
+              asp-route-id="@Model.Id"
+              method="post"
+              style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="nl-btn nl-btn--danger">
+                <i class="ph-fill ph-trash" aria-hidden="true"></i>
+                Yes, delete post
+            </button>
+        </form>
+    </div>
+
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-feed.css"
+          asp-append-version="true" />
+}

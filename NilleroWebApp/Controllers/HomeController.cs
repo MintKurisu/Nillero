@@ -1,26 +1,28 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Nillero.Core.Application.Dtos.Social;
+using Nillero.Core.Application.Interfaces.Presentation.Mappers;
 using Nillero.Core.Application.Interfaces.Social;
+using Nillero.Core.Application.Interfaces.Storage;
 using Nillero.Core.Application.Interfaces.User;
 using Nillero.Core.Application.ViewModels.Social.Comment;
 using Nillero.Core.Application.ViewModels.Social.Posts;
 using Nillero.Core.Domain.Common.Enum.Social;
 using Nillero.Infrastructure.Identity.Entities;
-using NilleroWebApp.Helpers;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace NilleroWebApp.Controllers
 {
     [Authorize]
-    public class HomeController : Controller 
+    public class HomeController : BaseController
     {
         private readonly IPostService _postService;
         private readonly ICommentService _commentService;
         private readonly IPostReactionService _reactionService;
-        private readonly IAccountServicesForWebApp _accountService; 
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPostViewModelMapper _postViewModelMapper;
+        private readonly IAccountServicesForWebApp _accountService;
+        private readonly IStorageService _storageService;
         private readonly IMapper _mapper;
 
         public HomeController(
@@ -29,14 +31,18 @@ namespace NilleroWebApp.Controllers
             IPostReactionService reactionService,
             IAccountServicesForWebApp accountService,
             UserManager<ApplicationUser> userManager,
-            IMapper mapper)
+            IStorageService storageService,
+            IMapper mapper,
+            IPostViewModelMapper postViewModelMapper)
+            : base(userManager)
         {
             _postService = postService;
             _commentService = commentService;
             _reactionService = reactionService;
             _accountService = accountService;
-            _userManager = userManager;
+            _storageService = storageService;
             _mapper = mapper;
+            _postViewModelMapper = postViewModelMapper;
         }
 
         public async Task<IActionResult> Index()
@@ -48,8 +54,11 @@ namespace NilleroWebApp.Controllers
                 return RedirectToAction("Index", "Login");
             }
 
+            ViewData["UserAvatarUrl"] = currentUser.ProfilePicturePath;
+            ViewData["UserHandle"] = currentUser.UserName;
+
             var postsDto = await _postService.GetPostsByUserIdAsync(currentUser.Id);
-            var postViewModels = await MapPostsToViewModels(postsDto, currentUser.Id);
+            var postViewModels = await _postViewModelMapper.MapAsync(postsDto, currentUser.Id);
 
             return View(postViewModels);
         }
@@ -107,7 +116,7 @@ namespace NilleroWebApp.Controllers
 
             if (createdPost != null && vm.MediaType == "Image" && vm.ImageFile != null)
             {
-                string mediaPath = FileManager.Upload(vm.ImageFile, createdPost.Id.ToString(), "Posts");
+                string mediaPath = await _storageService.UploadAsync(vm.ImageFile, "posts", createdPost.Id.ToString());
                 createdPost.MediaPath = mediaPath;
                 await _postService.UpdateAsync(createdPost, createdPost.Id);
             }
@@ -167,7 +176,10 @@ namespace NilleroWebApp.Controllers
 
             if (vm.MediaType == "Image" && vm.ImageFile != null)
             {
-                existingPost.MediaPath = FileManager.Upload(vm.ImageFile, vm.Id.Value.ToString(), "Posts", true, existingPost.MediaPath ?? "");
+                if (!string.IsNullOrWhiteSpace(existingPost.MediaPath))
+                    await _storageService.DeleteAsync(existingPost.MediaPath);
+
+                existingPost.MediaPath = await _storageService.UploadAsync(vm.ImageFile, "posts", vm.Id.Value.ToString());
                 existingPost.Type = PostType.Image;
                 existingPost.YouTubeUrl = null;
             }
@@ -224,12 +236,15 @@ namespace NilleroWebApp.Controllers
             if (postDto.UserId != currentUser.Id)
                 return RedirectToAction("Index");
 
+            if (!string.IsNullOrWhiteSpace(postDto.MediaPath))
+                await _storageService.DeleteAsync(postDto.MediaPath);
+
             await _postService.DeleteAsync(id);
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddComment(SaveCommentViewModel vm)
+        public async Task<IActionResult> AddComment(SaveCommentViewModel vm, string? returnUrl)
         {
             ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
 
@@ -246,17 +261,21 @@ namespace NilleroWebApp.Controllers
                 PostId = vm.PostId,
                 UserId = currentUser.Id,
                 ParentCommentId = vm.ParentCommentId,
-                RootCommentId = vm.RootCommentId, 
+                RootCommentId = vm.RootCommentId,
                 Content = vm.Content,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _commentService.AddAsync(commentDto);
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditComment(SaveCommentViewModel vm)
+        public async Task<IActionResult> EditComment(SaveCommentViewModel vm, string? returnUrl)
         {
             ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
 
@@ -276,11 +295,15 @@ namespace NilleroWebApp.Controllers
             existingComment.UpdatedAt = DateTime.UtcNow;
 
             await _commentService.UpdateAsync(existingComment, vm.Id.Value);
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteComment(int id)
+        public async Task<IActionResult> DeleteComment(int id, string? returnUrl)
         {
             ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
 
@@ -294,11 +317,15 @@ namespace NilleroWebApp.Controllers
                 return RedirectToAction("Index");
 
             await _commentService.DeleteAsync(id);
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleReaction(int postId, string reactionType)
+        public async Task<IActionResult> ToggleReaction(int postId, string reactionType, string? returnUrl)
         {
             ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
 
@@ -314,69 +341,40 @@ namespace NilleroWebApp.Controllers
             // Get the current user's reaction
             var currentReaction = await _reactionService.GetUserReactionAsync(currentUser.Id, postId);
 
-            // Only call the service if:
-            // 1. There is no previous reaction (currentReaction == null), OR
-            // 2. The reaction is different from the current one
-            if (currentReaction == null || currentReaction != newReaction)
+            if (currentReaction == newReaction)
             {
+                // Clicking the same reaction removes it
+                await _reactionService.RemoveReactionAsync(currentUser.Id, postId);
+            }
+            else
+            {
+                // Creates a new reaction or switches Like <-> Dislike
                 await _reactionService.ToggleReactionAsync(currentUser.Id, postId, newReaction);
             }
-            // If currentReaction == newReaction, do nothing (cannot remove)
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
 
             return RedirectToAction("Index");
         }
 
-        #region Private Methods
-
-        private async Task<List<PostViewModel>> MapPostsToViewModels(List<PostDto> postsDto, string currentUserId)
+        public async Task<IActionResult> Details(int id, int? commentId = null)
         {
-            var postViewModels = new List<PostViewModel>();
+            ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+                return RedirectToAction("Index", "Login");
 
-            foreach (var postDto in postsDto)
-            {
-                var postOwner = await _userManager.FindByIdAsync(postDto.UserId);
-                var comments = await _commentService.GetCommentsByPostIdAsync(postDto.Id);
-                var (likes, dislikes) = await _reactionService.GetReactionCountsAsync(postDto.Id);
-                var userReaction = await _reactionService.GetUserReactionAsync(currentUserId, postDto.Id);
+            var postDto = await _postService.GetById(id);
+            if (postDto == null)
+                return RedirectToAction("Index");
 
-                var postVm = _mapper.Map<PostViewModel>(postDto);
-                postVm.UserName = postOwner?.UserName ?? "";
-                postVm.UserFullName = $"{postOwner?.FirstName} {postOwner?.LastName}";
-                postVm.UserProfilePicture = postOwner?.ProfilePicturePath;
-                postVm.IsOwner = postDto.UserId == currentUserId;
-                postVm.LikeCount = likes;
-                postVm.DislikeCount = dislikes;
-                postVm.UserReaction = userReaction;
-                postVm.Comments = await MapCommentsToViewModels(comments, currentUserId);
+            var postVms = await _postViewModelMapper.MapAsync(new List<PostDto> { postDto }, currentUser.Id);
 
-                postViewModels.Add(postVm);
-            }
+            ViewData["UserAvatarUrl"] = currentUser.ProfilePicturePath;
+            ViewData["UserHandle"] = currentUser.UserName;
+            ViewData["HighlightCommentId"] = commentId; 
 
-            return postViewModels;
+            return View("Index", postVms);
         }
-
-        private async Task<List<CommentViewModel>> MapCommentsToViewModels(List<CommentDto> commentsDto, string currentUserId)
-        {
-            var commentViewModels = new List<CommentViewModel>();
-
-            foreach (var c in commentsDto)
-            {
-                var commentOwner = await _userManager.FindByIdAsync(c.UserId);
-
-                var commentVm = _mapper.Map<CommentViewModel>(c);
-                commentVm.UserName = commentOwner?.UserName ?? "";
-                commentVm.UserFullName = $"{commentOwner?.FirstName} {commentOwner?.LastName}";
-                commentVm.UserProfilePicture = commentOwner?.ProfilePicturePath;
-                commentVm.IsOwner = c.UserId == currentUserId;
-
-                commentVm.Replies = await MapCommentsToViewModels(c.Replies, currentUserId);
-
-                commentViewModels.Add(commentVm);
-            }
-
-            return commentViewModels;
-        }
-
-        #endregion
     }
 }

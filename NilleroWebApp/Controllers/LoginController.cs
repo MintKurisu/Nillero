@@ -1,27 +1,28 @@
-﻿using Nillero.Core.Application.Dtos.User;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Nillero.Core.Application.Dtos.User;
 using Nillero.Core.Application.Dtos.User.Password;
+using Nillero.Core.Application.Interfaces.Storage;
 using Nillero.Core.Application.Interfaces.User;
 using Nillero.Core.Application.ViewModels.Login;
 using Nillero.Core.Application.ViewModels.Login.Password;
 using Nillero.Core.Domain.Common.Enum;
 using Nillero.Infrastructure.Identity.Entities;
-using NilleroWebApp.Helpers;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace NilleroWebApp.Controllers
 {
-    public class LoginController : Controller
+    public class LoginController : BaseController
     {
         private readonly IAccountServicesForWebApp _accountServiceForWebApp;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStorageService _storageService;
 
         public LoginController(
             IAccountServicesForWebApp accountService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IStorageService storageService) : base(userManager)
         {
             _accountServiceForWebApp = accountService;
-            _userManager = userManager;
+            _storageService = storageService;
         }
 
         public async Task<IActionResult> Index(string? returnUrl = null)
@@ -95,7 +96,7 @@ namespace NilleroWebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            await _accountServiceForWebApp.SingOutAsync();
+            await _accountServiceForWebApp.SignOutAsync();
             return RedirectToAction("Index");
         }
 
@@ -117,32 +118,23 @@ namespace NilleroWebApp.Controllers
         public async Task<IActionResult> Register(RegisterViewModel vm)
         {
             if (!ModelState.IsValid)
-            {
                 return View(vm);
-            }
-
-            string? profilePicturePath = null;
-            if (vm.ProfilePicture != null)
-            {
-                profilePicturePath = FileManager.Upload(vm.ProfilePicture, vm.UserName, "Users");
-            }
 
             SaveUserDto dto = new SaveUserDto
             {
-                Id = null, // for new registrations
+                Id = null,
                 UserName = vm.UserName,
                 FirstName = vm.FirstName,
                 LastName = vm.LastName,
                 Email = vm.Email,
                 Phone = vm.Phone,
                 Password = vm.Password,
-                ProfilePicturePath = profilePicturePath,
-                Role = Roles.User.ToString(), // Always "User"
-                IsActive = false // Inactive until email confirmation
+                ProfilePicturePath = null, 
+                Role = Roles.User.ToString(),
+                IsActive = false
             };
 
             string origin = $"{Request.Scheme}://{Request.Host}";
-
             RegisterResponseDto? response = await _accountServiceForWebApp.RegisterUser(dto, origin);
 
             if (response.HasError)
@@ -152,11 +144,12 @@ namespace NilleroWebApp.Controllers
                 return View(vm);
             }
 
-            if (response != null && !string.IsNullOrWhiteSpace(response.Id))
+            // with the Id already generated, upload the photo and update
+            if (!string.IsNullOrWhiteSpace(response.Id) && vm.ProfilePicture != null)
             {
                 dto.Id = response.Id;
-                dto.ProfilePicturePath = FileManager.Upload(vm.ProfilePicture, dto.Id, "Users");
-                await _accountServiceForWebApp.EditUser(dto, origin, true); 
+                dto.ProfilePicturePath = await _storageService.UploadAsync(vm.ProfilePicture, "users", response.Id);
+                await _accountServiceForWebApp.EditUser(dto, origin, true);
             }
 
             TempData["SuccessMessage"] = "User registered successfully. Please check your email to activate your account.";

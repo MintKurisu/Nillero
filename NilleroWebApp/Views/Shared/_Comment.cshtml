@@ -1,0 +1,169 @@
+﻿@model CommentViewModel
+@{
+    string targetController = ViewData["TargetController"] as string ?? "Home";
+    string returnUrl = ViewData["ReturnUrl"] as string ?? string.Empty;
+}
+
+<div class="nl-comment" role="listitem" id="comment-@Model.Id">
+
+    <!-- Header -->
+    <div class="nl-comment__header">
+
+        @if (!string.IsNullOrWhiteSpace(Model.UserProfilePicture))
+        {
+            <img src="@Model.UserProfilePicture"
+                 alt="@Model.UserFullName"
+                 class="nl-avatar nl-avatar--sm"
+                 loading="lazy" />
+        }
+        else
+        {
+            <div class="nl-avatar nl-avatar--sm nl-avatar--fallback" aria-hidden="true">
+                <i class="ph-fill ph-user"></i>
+            </div>
+        }
+
+        <div class="nl-comment__meta">
+            <span class="nl-comment__name">@Model.UserFullName</span>
+            <span class="nl-comment__handle">
+                @@@Model.UserName
+                <span aria-hidden="true"> · </span>
+                <time datetime="@Model.CreatedAt.ToString("o")"
+                      title="@Model.CreatedAt.ToString("MMMM d, yyyy 'at' h:mm tt")">
+                    @GetCommentTime(Model.CreatedAt)
+                </time>
+            </span>
+        </div>
+
+        @if (Model.IsOwner)
+        {
+            <div class="nl-comment__owner-actions">
+                <button type="button"
+                        class="nl-icon-btn nl-icon-btn--xs"
+                        aria-label="Edit comment"
+                        data-edit-trigger="comment-edit-@Model.Id">
+                    <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+                </button>
+                <form asp-controller="@targetController"
+                      asp-action="DeleteComment"
+                      method="post"
+                      style="display:inline;"
+                      onsubmit="return confirm('Delete this comment?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit"
+                            class="nl-icon-btn nl-icon-btn--xs nl-icon-btn--danger"
+                            aria-label="Delete comment">
+                        <i class="ph ph-trash" aria-hidden="true"></i>
+                    </button>
+                </form>
+            </div>
+        }
+
+    </div>
+
+    <!-- Content (read mode) -->
+    <div class="nl-comment__content" id="comment-content-@Model.Id">
+        <p>@Model.Content</p>
+    </div>
+
+    <!-- Edit form (hidden by default) -->
+    @if (Model.IsOwner)
+    {
+        <form asp-controller="@targetController"
+              asp-action="EditComment"
+              method="post"
+              class="nl-comment-edit-form"
+              id="comment-edit-@Model.Id"
+              hidden>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <input type="hidden" name="PostId" value="@Model.PostId" />
+            <div class="nl-add-comment-form__inner">
+                <textarea name="Content"
+                      class="nl-input nl-add-comment-form__input"
+                      rows="2"
+                      maxlength="500"
+                      aria-label="Edit your comment">@Model.Content</textarea>
+                <button type="submit"
+                        class="nl-btn nl-btn--primary nl-btn--sm"
+                        aria-label="Save changes">
+                    <i class="ph-fill ph-check" aria-hidden="true"></i>
+                </button>
+            </div>
+            <button type="button"
+                    class="nl-btn nl-btn--ghost nl-btn--sm"
+                    style="margin-top:4px; font-size:var(--nl-size-xs);"
+                    data-edit-cancel="comment-edit-@Model.Id">
+                Cancel
+            </button>
+        </form>
+    }
+
+    <!-- Reply trigger + form -->
+    <div class="nl-comment__reply-area">
+        <button type="button"
+                class="nl-reply-trigger"
+                aria-expanded="false"
+                data-reply-trigger="reply-form-@Model.Id">
+            <i class="ph ph-arrow-bend-down-right" aria-hidden="true"></i>
+            Reply
+        </button>
+
+        <form asp-controller="@targetController"
+              asp-action="AddComment"
+              method="post"
+              class="nl-reply-form"
+              id="reply-form-@Model.Id"
+              hidden>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <input type="hidden" name="PostId" value="@Model.PostId" />
+            <input type="hidden" name="ParentCommentId" value="@Model.Id" />
+            <input type="hidden" name="RootCommentId" value="@(Model.RootCommentId.HasValue? Model.RootCommentId: Model.Id)" />
+            <div class="nl-add-comment-form__inner">
+                <textarea name="Content"
+                          class="nl-input nl-add-comment-form__input"
+                          placeholder="Write a reply…"
+                          rows="1"
+                          maxlength="500"
+                          aria-label="Write a reply"
+                          required></textarea>
+                <button type="submit"
+                        class="nl-btn nl-btn--primary nl-btn--sm"
+                        aria-label="Post reply">
+                    <i class="ph-fill ph-paper-plane-tilt" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Replies (one indent level) -->
+    @if (Model.Replies != null && Model.Replies.Any())
+    {
+        <div class="nl-comment__replies" role="list" aria-label="Replies">
+            @foreach (var reply in Model.Replies)
+            {
+                @await Html.PartialAsync("_Comment", reply, new ViewDataDictionary(ViewData)
+                {
+                ["ReturnUrl"] = returnUrl
+                })
+                }
+        </div>
+    }
+
+</div>
+
+@functions {
+    static string GetCommentTime(DateTime utc)
+    {
+        var delta = DateTime.UtcNow - utc;
+        if (delta.TotalSeconds < 60) return "just now";
+        if (delta.TotalMinutes < 60) return $"{(int)delta.TotalMinutes}m";
+        if (delta.TotalHours < 24) return $"{(int)delta.TotalHours}h";
+        if (delta.TotalDays < 7) return $"{(int)delta.TotalDays}d";
+        return utc.ToString("MMM d");
+    }
+}

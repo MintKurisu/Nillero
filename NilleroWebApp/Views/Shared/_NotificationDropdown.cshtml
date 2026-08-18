@@ -1,0 +1,35 @@
+﻿@model List<NotificationViewModel>
+
+<div class="nl-notif-dropdown__header">
+    <span class="nl-notif-dropdown__title">Notifications</span>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <button class="nl-btn-text nl-notif-dropdown__mark-all"
+                id="nl-notif-mark-all"
+                type="button">
+            Mark all as read
+        </button>
+    }
+</div>
+
+<div class="nl-notif-dropdown__list">
+    @if (!Model.Any())
+    {
+        <p class="nl-notif-dropdown__empty">You're all caught up.</p>
+    }
+    else
+    {
+        <ul class="nl-notif-list">
+            @foreach (var n in Model)
+            {
+                @await Html.PartialAsync("_NotificationItem", n)
+            }
+        </ul>
+    }
+</div>
+
+<div class="nl-notif-dropdown__footer">
+    <a asp-controller="Notification" asp-action="Index" class="nl-notif-dropdown__see-all">
+        See all notifications
+    </a>
+</div>

@@ -1,0 +1,444 @@
+﻿/* nillero-notifications.css
+   Tokens: --nl-* (defined in nillero.css)
+   Loaded globally via _Layout.cshtml
+*/
+
+/* ── Notification Page ─────────────────────────────────────── */
+
+.nl-notif-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+}
+
+.nl-notif-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.nl-notif-page__title {
+    font-family: var(--nl-font);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--nl-text-1);
+    margin: 0;
+}
+
+.nl-btn-text {
+    font-family: var(--nl-font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--nl-text-2);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--nl-radius-sm);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+    .nl-btn-text:hover {
+        background-color: var(--nl-bg);
+        color: var(--nl-text-1);
+    }
+
+.nl-notif-section {
+    margin-bottom: 24px;
+}
+
+.nl-notif-section__label {
+    font-family: var(--nl-font);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--nl-text-2);
+    margin: 0 0 8px 4px;
+}
+
+/* ── Notification List ─────────────────────────────────────── */
+
+.nl-notif-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: var(--nl-surface);
+    border: 1px solid var(--nl-border);
+    border-radius: var(--nl-radius);
+    overflow: hidden;
+}
+
+.nl-notification-item {
+    border-bottom: 1px solid var(--nl-border);
+}
+
+    .nl-notification-item:last-child {
+        border-bottom: none;
+    }
+
+.nl-notification-item__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: background-color 0.15s ease;
+}
+
+    .nl-notification-item__link:hover {
+        background-color: var(--nl-bg);
+    }
+
+.nl-notification-item--unread .nl-notification-item__link {
+    background-color: rgba(200, 169, 110, 0.06);
+}
+
+/* ── Avatar ────────────────────────────────────────────────── */
+
+.nl-notification-item__avatar {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    overflow: hidden;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+    .nl-notification-item__avatar img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+        /* Neutralize nillero.css base reset */
+        max-width: none;
+    }
+
+    .nl-notification-item__avatar > i {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: var(--nl-text-2);
+    }
+
+/* ── Type badge (colored circle over avatar) ───────────────── */
+
+.nl-notification-item__badge {
+    position: absolute;
+    bottom: 0;
+    right: -1px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--nl-surface);
+    /* Ensure badge sits above avatar img */
+    z-index: 1;
+}
+
+.nl-notification-item__badge--comment {
+    background: #3b82f6;
+}
+
+.nl-notification-item__badge--like {
+    background: #ef4444;
+}
+
+.nl-notification-item__badge--friend {
+    background: #22c55e;
+}
+
+.nl-notification-item__badge--default {
+    background: var(--nl-accent);
+}
+
+.nl-notification-item__badge i {
+    font-size: 11px;
+    color: #ffffff !important;
+    /* Force white regardless of Phosphor's own color cascade */
+    -webkit-text-fill-color: #ffffff;
+}
+
+/* ── Item body ─────────────────────────────────────────────── */
+
+.nl-notification-item__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.nl-notification-item__message {
+    font-family: var(--nl-font);
+    font-size: 14px;
+    color: var(--nl-text-1);
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.nl-notification-item__time {
+    font-family: var(--nl-font);
+    font-size: 12px;
+    color: var(--nl-text-2);
+}
+
+.nl-notification-item__dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--nl-radius-full);
+    background-color: var(--nl-accent);
+}
+
+/* ── Empty state ───────────────────────────────────────────── */
+
+.nl-notif-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 64px 24px;
+    border: 1px dashed var(--nl-border);
+    border-radius: var(--nl-radius);
+    background-color: var(--nl-surface);
+}
+
+.nl-notif-empty__icon {
+    font-size: 32px;
+    color: var(--nl-text-2);
+    margin-bottom: 12px;
+}
+
+.nl-notif-empty__text {
+    font-family: var(--nl-font);
+    font-size: 14px;
+    color: var(--nl-text-2);
+    max-width: 280px;
+    margin: 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .nl-notif-page {
+        padding: 16px 12px 88px;
+    }
+}
+
+/* ── Dropdown (topbar bell) ────────────────────────────────── */
+
+.nl-notif-wrapper {
+    position: relative;
+}
+
+.nl-notif-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 340px;
+    background: var(--nl-surface);
+    border: 1px solid var(--nl-border);
+    border-radius: var(--nl-radius);
+    box-shadow: var(--nl-shadow-dropdown);
+    z-index: 200;
+    overflow: hidden;
+    animation: nl-dropdown-in var(--nl-dur-base) var(--nl-ease) both;
+    transform-origin: top right;
+}
+
+.nl-notif-dropdown__header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--nl-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.nl-notif-dropdown__mark-all {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    color: var(--nl-text-2);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+    .nl-notif-dropdown__mark-all:hover {
+        color: var(--nl-text-1);
+        background: var(--nl-border-faint);
+    }
+
+    .nl-notif-dropdown__mark-all:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+.nl-notif-dropdown__title {
+    font-family: var(--nl-font);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--nl-text-1);
+}
+
+.nl-notif-dropdown__list {
+    max-height: 340px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--nl-border) transparent;
+}
+
+.nl-notif-dropdown__empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--nl-text-2);
+    font-family: var(--nl-font);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.nl-notif-dropdown__footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--nl-border);
+    text-align: center;
+}
+
+.nl-notif-dropdown__see-all {
+    font-family: var(--nl-font);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--nl-accent);
+    text-decoration: none;
+    transition: color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-notif-dropdown__see-all:hover {
+        color: var(--nl-text-1);
+    }
+
+/* Override list chrome inside dropdown */
+.nl-notif-dropdown .nl-notif-list {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+}
+
+/* Tighter padding in dropdown context */
+.nl-notif-dropdown .nl-notification-item__link {
+    padding: 10px 14px;
+}
+
+/* Avatar — explicit override so base reset (max-width:100%) can't leak */
+.nl-notif-dropdown .nl-notification-item__avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    /* position:relative already set on base rule */
+}
+
+    .nl-notif-dropdown .nl-notification-item__avatar img {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none !important;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+/* Badge icon color — Phosphor sets its own fill; override it */
+.nl-notif-dropdown .nl-notification-item__badge i,
+.nl-notif-dropdown .nl-notification-item__badge i::before {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 10px;
+}
+
+/* Border between items */
+.nl-notif-dropdown .nl-notification-item {
+    border-bottom: 1px solid var(--nl-border-faint);
+}
+
+    .nl-notif-dropdown .nl-notification-item:last-child {
+        border-bottom: none;
+    }
+
+/* ── Delete button on notification item ────────────────────── */
+
+.nl-notification-item {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.nl-notification-item__link {
+    flex: 1;
+}
+
+.nl-notification-item__delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-left: 1px solid var(--nl-border-faint);
+    color: var(--nl-text-3);
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--nl-dur-fast) var(--nl-ease), color var(--nl-dur-fast) var(--nl-ease), background var(--nl-dur-fast) var(--nl-ease);
+}
+
+.nl-notification-item:hover .nl-notification-item__delete {
+    opacity: 1;
+}
+
+.nl-notification-item__delete:hover {
+    color: var(--nl-danger);
+    background: var(--nl-danger-dim);
+}
+
+/* Fade-out animation for removed items */
+.nl-notification-item.is-removing {
+    overflow: hidden;
+    transition: max-height 0.25s var(--nl-ease), opacity 0.2s var(--nl-ease), padding 0.25s var(--nl-ease);
+    max-height: 0 !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Page header with multiple actions ─────────────────────── */
+
+.nl-notif-page__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nl-btn-text--danger {
+    color: var(--nl-danger);
+}
+
+    .nl-btn-text--danger:hover {
+        background-color: var(--nl-danger-dim);
+        color: var(--nl-danger);
+    }

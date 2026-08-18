@@ -6,6 +6,8 @@ using Nillero.Infrastructure.Persistence.Repositories.Social;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nillero.Core.Domain.Interfaces.Notifications;
+using Nillero.Infrastructure.Persistence.Repositories.Notifications;
 
 namespace Nillero.Infrastructure.Persistence
 {
@@ -49,6 +51,8 @@ namespace Nillero.Infrastructure.Persistence
             services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
             services.AddScoped<IFriendshipRepository, FriendshipRepository>();
             services.AddScoped<IPostReactionRepository, PostReactionRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             #endregion
         }

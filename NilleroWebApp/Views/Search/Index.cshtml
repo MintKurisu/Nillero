@@ -1,0 +1,125 @@
+﻿@model SearchResultViewModel
+@{
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Query)
+        ? "Search"
+        : $"Results for \"{Model.Query}\"";
+    ViewData["ActiveNav"] = "search";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="nl-page-header">
+    <h1 class="nl-page-header__title">
+        @if (string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <span>Search</span>
+        }
+        else
+        {
+            <span>Results for <em style="font-style:normal;color:var(--nl-accent);">"@Model.Query"</em></span>
+        }
+    </h1>
+</div>
+
+@if (string.IsNullOrWhiteSpace(Model.Query))
+{
+    <!-- Empty prompt — user navigated to /Search with no query -->
+    <div class="nl-empty-state nl-reveal">
+        <div class="nl-empty-state__icon" aria-hidden="true">
+            <i class="ph ph-magnifying-glass"></i>
+        </div>
+        <h2 class="nl-empty-state__title">What are you looking for?</h2>
+        <p class="nl-empty-state__body">Type a name or keyword in the search bar above.</p>
+    </div>
+}
+else if (!Model.HasResults)
+{
+    <!-- No matches -->
+    <div class="nl-empty-state nl-reveal">
+        <div class="nl-empty-state__icon" aria-hidden="true">
+            <i class="ph ph-smiley-sad"></i>
+        </div>
+        <h2 class="nl-empty-state__title">No results found</h2>
+        <p class="nl-empty-state__body">
+            No people or posts matched <strong>"@Model.Query"</strong>.
+            Try a different keyword.
+        </p>
+    </div>
+}
+else
+{
+    <!-- ── People section ──────────────────────────────────── -->
+    @if (Model.People.Any())
+    {
+        <section class="nl-search-page-section nl-reveal" aria-labelledby="nl-search-people-heading">
+            <h2 class="nl-search-page-section__title" id="nl-search-people-heading">
+                <i class="ph ph-users" aria-hidden="true"></i>
+                People
+                <span class="nl-search-page-section__count">@Model.People.Count</span>
+            </h2>
+
+            <div class="nl-search-people-grid">
+                @foreach (var person in Model.People)
+                {
+                    <a class="nl-search-person-card nl-reveal"
+                       asp-controller="Friends"
+                       asp-action="UserPosts"
+                       asp-route-userId="@person.UserId"
+                       aria-label="View posts by @person.FullName">
+
+                        @if (!string.IsNullOrWhiteSpace(person.ProfilePicture))
+                        {
+                            <img src="@person.ProfilePicture"
+                                 alt="@person.FullName"
+                                 class="nl-avatar nl-avatar--md"
+                                 loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="nl-avatar nl-avatar--md nl-avatar--fallback" aria-hidden="true">
+                                <i class="ph-fill ph-user"></i>
+                            </div>
+                        }
+
+                        <div class="nl-search-person-card__body">
+                            <span class="nl-search-person-card__name">@person.FullName</span>
+                            <span class="nl-search-person-card__handle">@@@person.UserName</span>
+                        </div>
+
+                        <i class="ph ph-arrow-right nl-search-person-card__arrow" aria-hidden="true"></i>
+                    </a>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- ── Posts section ───────────────────────────────────── -->
+    @if (Model.Posts.Any())
+    {
+        <section class="nl-search-page-section nl-reveal" aria-labelledby="nl-search-posts-heading">
+            <h2 class="nl-search-page-section__title" id="nl-search-posts-heading">
+                <i class="ph ph-article" aria-hidden="true"></i>
+                Posts from friends
+                <span class="nl-search-page-section__count">@Model.Posts.Count</span>
+            </h2>
+
+            <div class="nl-feed">
+                @foreach (var post in Model.PostViewModels)
+                {
+                    @await Html.PartialAsync("_PostCard", post, new ViewDataDictionary(ViewData)
+                    {
+                    ["TargetController"] = "Friends"
+                })
+                }
+            </div>
+        </section>
+    }
+}
+
+@section Head {
+    <link rel="stylesheet" href="~/css/nillero-feed.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/nillero-search-page.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/nillero-feed.js" asp-append-version="true"></script>
+}

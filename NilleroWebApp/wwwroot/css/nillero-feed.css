@@ -1,0 +1,716 @@
+﻿/* ============================================================
+   NILLERO — Feed & Post Components
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   FEED ITEM WRAPPER
+   nl-feed-item es el <article> raíz del partial _PostCard.
+   Se le da aquí la apariencia de card directamente, para que
+   el partial funcione igual sin importar en qué página se
+   use (feed principal, wall de amigos, perfil, etc.) sin
+   depender de que el contexto que lo llama lo envuelva en
+   un .nl-card externo.
+───────────────────────────────────────────────────────── */
+.nl-feed-item {
+    background: var(--nl-surface);
+    border: 1px solid var(--nl-border-faint);
+    border-radius: var(--nl-radius);
+    overflow: hidden;
+    transition: border-color var(--nl-dur-base) var(--nl-ease);
+}
+
+    .nl-feed-item:hover {
+        border-color: var(--nl-border);
+    }
+
+    .nl-feed-item.nl-reveal {
+        animation: nl-settings-rise 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────────────────────── */
+.nl-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 64px 24px;
+    gap: 12px;
+}
+
+.nl-empty-state__icon {
+    font-size: 48px;
+    color: var(--nl-border);
+    line-height: 1;
+}
+
+.nl-empty-state__title {
+    font-size: var(--nl-size-lg);
+    font-weight: 600;
+    color: var(--nl-text-1);
+    margin: 0;
+}
+
+.nl-empty-state__body {
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-3);
+    margin: 0 0 8px;
+    max-width: 300px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   POST CARD
+───────────────────────────────────────────────────────── */
+.nl-post-card {
+    padding: 16px 20px 0;
+}
+
+.nl-post-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.nl-post-card__avatar-link {
+    flex-shrink: 0;
+    border-radius: var(--nl-radius-full);
+    transition: opacity var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-post-card__avatar-link:hover {
+        opacity: 0.85;
+    }
+
+/* Fallback avatar (no photo) */
+.nl-avatar--fallback {
+    background: var(--nl-border-faint);
+    border: 1px solid var(--nl-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nl-text-3);
+    font-size: 16px;
+}
+
+.nl-avatar--md.nl-avatar--fallback {
+    font-size: 18px;
+}
+
+.nl-avatar--lg.nl-avatar--fallback {
+    font-size: 24px;
+}
+
+.nl-post-card__meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-top: 2px;
+}
+
+.nl-post-card__fullname {
+    font-size: var(--nl-size-sm);
+    font-weight: 600;
+    color: var(--nl-text-1);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-post-card__fullname:hover {
+        color: var(--nl-accent);
+    }
+
+.nl-post-card__handle {
+    font-size: var(--nl-size-xs);
+    color: var(--nl-text-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nl-post-card__time {
+    color: var(--nl-text-3);
+}
+
+.nl-post-card__owner-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Content */
+.nl-post-card__content {
+    margin-top: 12px;
+    font-size: var(--nl-size-base);
+    color: var(--nl-text-1);
+    line-height: 1.6;
+}
+
+    .nl-post-card__content p {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+/* Media */
+.nl-post-card__media {
+    margin-top: 12px;
+    border-radius: var(--nl-radius);
+    overflow: hidden;
+    background: var(--nl-border-faint);
+}
+
+.nl-post-card__image {
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    object-fit: cover;
+    display: block;
+}
+
+.nl-post-card__media--video {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+}
+
+.nl-post-card__embed {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ICON BUTTON VARIANTS
+───────────────────────────────────────────────────────── */
+.nl-icon-btn--danger {
+    color: var(--nl-text-3);
+}
+
+    .nl-icon-btn--danger:hover {
+        background: var(--nl-danger-dim);
+        color: var(--nl-danger);
+    }
+
+.nl-icon-btn--xs {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   REACTION BAR
+───────────────────────────────────────────────────────── */
+.nl-post-card__reactions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 0;
+    margin-top: 12px;
+    border-top: 1px solid var(--nl-border-faint);
+}
+
+.nl-reaction-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.nl-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: none;
+    border: none;
+    border-radius: var(--nl-radius-sm);
+    font-family: var(--nl-font);
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-3);
+    cursor: pointer;
+    transition: background var(--nl-dur-fast) var(--nl-ease), color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-reaction-btn:hover {
+        background: var(--nl-border-faint);
+        color: var(--nl-text-2);
+    }
+
+    .nl-reaction-btn.is-active--like {
+        color: var(--nl-accent);
+        background: var(--nl-accent-dim);
+    }
+
+    .nl-reaction-btn.is-active--dislike {
+        color: var(--nl-text-2);
+        background: var(--nl-border-faint);
+    }
+
+.nl-reaction-btn__count {
+    font-size: var(--nl-size-xs);
+    font-weight: 500;
+    min-width: 14px;
+    text-align: left;
+}
+
+.nl-reaction-comment-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-3);
+    margin-left: 2px;
+}
+
+    .nl-reaction-comment-count span {
+        font-size: var(--nl-size-xs);
+        font-weight: 500;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   COMMENTS SECTION (<details>)
+───────────────────────────────────────────────────────── */
+.nl-comments-section {
+    border-top: 1px solid var(--nl-border-faint);
+}
+
+.nl-comments-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--nl-size-sm);
+    font-weight: 500;
+    color: var(--nl-text-2);
+    user-select: none;
+    transition: color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-comments-toggle::-webkit-details-marker {
+        display: none;
+    }
+
+    .nl-comments-toggle:hover {
+        color: var(--nl-text-1);
+    }
+
+.nl-comments-toggle__caret {
+    font-size: 12px;
+    transition: transform var(--nl-dur-base) var(--nl-ease);
+    flex-shrink: 0;
+}
+
+.nl-comments-section[open] .nl-comments-toggle__caret {
+    transform: rotate(90deg);
+}
+
+.nl-comments-body {
+    padding-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ADD COMMENT FORM
+───────────────────────────────────────────────────────── */
+.nl-add-comment-form {
+    margin-bottom: 16px;
+}
+
+.nl-add-comment-form__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.nl-add-comment-form__input {
+    flex: 1;
+    min-height: 38px;
+    max-height: 120px;
+    padding: 8px 12px;
+    font-size: var(--nl-size-sm);
+    border-radius: var(--nl-radius-sm);
+    resize: none;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────
+   COMMENT ITEM
+───────────────────────────────────────────────────────── */
+.nl-comment {
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--nl-border-faint);
+}
+
+    .nl-comment:first-child {
+        border-top: none;
+    }
+
+.nl-comment__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.nl-comment__meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-top: 1px;
+}
+
+.nl-comment__name {
+    font-size: var(--nl-size-sm);
+    font-weight: 600;
+    color: var(--nl-text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nl-comment__handle {
+    font-size: var(--nl-size-xs);
+    color: var(--nl-text-3);
+}
+
+.nl-comment__owner-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.nl-comment__content {
+    margin: 6px 0 4px 40px;
+    font-size: var(--nl-size-sm);
+    color: var(--nl-text-1);
+    line-height: 1.55;
+}
+
+    .nl-comment__content p {
+        margin: 0;
+        word-break: break-word;
+    }
+
+.nl-comment-edit-form {
+    margin: 6px 0 4px 40px;
+}
+
+/* Reply trigger */
+.nl-comment__reply-area {
+    margin-left: 40px;
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nl-reply-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 2px 0;
+    font-family: var(--nl-font);
+    font-size: var(--nl-size-xs);
+    font-weight: 500;
+    color: var(--nl-text-3);
+    cursor: pointer;
+    transition: color var(--nl-dur-fast) var(--nl-ease);
+}
+
+    .nl-reply-trigger:hover {
+        color: var(--nl-text-1);
+    }
+
+    .nl-reply-trigger[aria-expanded="true"] {
+        color: var(--nl-text-1);
+    }
+
+.nl-reply-form {
+    margin-top: 4px;
+}
+
+/* Nested replies — single indent */
+.nl-comment__replies {
+    margin-left: 40px;
+    padding-left: 12px;
+    border-left: 2px solid var(--nl-border-faint);
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SAVE POST CARD
+───────────────────────────────────────────────────────── */
+.nl-save-post-card {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.nl-save-post-card__field {
+    margin-bottom: 20px;
+}
+
+.nl-save-post-card__textarea {
+    min-height: 120px;
+    font-size: var(--nl-size-base);
+}
+
+.nl-save-post-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--nl-border-faint);
+    margin-top: 4px;
+}
+
+/* Media type toggle pills */
+.nl-media-toggle {
+    display: inline-flex;
+    background: var(--nl-border-faint);
+    border-radius: var(--nl-radius-sm);
+    padding: 3px;
+    gap: 2px;
+}
+
+.nl-media-toggle__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: none;
+    border: none;
+    border-radius: calc(var(--nl-radius-sm) - 2px);
+    font-family: var(--nl-font);
+    font-size: var(--nl-size-sm);
+    font-weight: 500;
+    color: var(--nl-text-2);
+    cursor: pointer;
+    transition: background var(--nl-dur-base) var(--nl-ease), color var(--nl-dur-base) var(--nl-ease), box-shadow var(--nl-dur-base) var(--nl-ease);
+}
+
+    .nl-media-toggle__btn:hover {
+        color: var(--nl-text-1);
+    }
+
+    .nl-media-toggle__btn.is-active {
+        background: var(--nl-surface);
+        color: var(--nl-text-1);
+        box-shadow: 0 1px 3px rgba(28,28,26,0.08);
+    }
+
+/* File drop zone */
+.nl-file-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    border: 1px dashed var(--nl-border);
+    border-radius: var(--nl-radius-sm);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color var(--nl-dur-base) var(--nl-ease), background var(--nl-dur-base) var(--nl-ease);
+}
+
+    .nl-file-drop:hover {
+        border-color: var(--nl-text-3);
+        background: var(--nl-border-faint);
+    }
+
+.nl-file-drop__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 24px;
+    text-align: center;
+}
+
+.nl-file-drop__icon {
+    font-size: 28px;
+    color: var(--nl-text-3);
+}
+
+.nl-file-drop__label {
+    font-size: var(--nl-size-sm);
+    font-weight: 500;
+    color: var(--nl-text-2);
+}
+
+.nl-file-drop__hint {
+    font-size: var(--nl-size-xs);
+    color: var(--nl-text-3);
+}
+
+.nl-file-drop__preview {
+    width: 100%;
+}
+
+    .nl-file-drop__preview img {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        display: block;
+    }
+
+/* Current media (edit mode) */
+.nl-current-media {
+    margin-bottom: 16px;
+}
+
+.nl-current-media__preview {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: var(--nl-radius-sm);
+    border: 1px solid var(--nl-border);
+}
+
+/* YouTube preview wrapper */
+.nl-youtube-preview {
+    margin-top: 16px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   DELETE POST
+───────────────────────────────────────────────────────── */
+.nl-delete-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--nl-danger-dim);
+    border: 1px solid rgba(212, 87, 74, 0.2);
+    border-radius: var(--nl-radius-sm);
+    margin-bottom: 20px;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+    .nl-delete-notice > i {
+        font-size: 20px;
+        color: var(--nl-danger);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .nl-delete-notice strong {
+        display: block;
+        font-size: var(--nl-size-sm);
+        font-weight: 600;
+        color: var(--nl-danger);
+        margin-bottom: 2px;
+    }
+
+    .nl-delete-notice p {
+        margin: 0;
+        font-size: var(--nl-size-sm);
+        color: var(--nl-danger);
+        opacity: 0.85;
+    }
+
+.nl-delete-preview {
+    max-width: 560px;
+    margin: 0 auto;
+    opacity: 0.75;
+    pointer-events: none;
+    user-select: none;
+}
+
+.nl-delete-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    max-width: 560px;
+    margin: 20px auto 0;
+}
+
+/* Danger button variant */
+.nl-btn--danger {
+    background: var(--nl-danger);
+    color: #fff;
+    border-color: var(--nl-danger);
+}
+
+    .nl-btn--danger:hover {
+        background: #bf4a3e;
+        border-color: #bf4a3e;
+        color: #fff;
+    }
+
+/* ─────────────────────────────────────────────────────────
+   REDUCED MOTION
+───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .nl-feed-item.nl-reveal {
+        animation: none;
+    }
+
+    .nl-feed-item {
+        transition: none;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   JS-DRIVEN COMMENT INTERACTION HELPERS
+   (toggle edit form + reply form)
+───────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────
+   COMMENT HIGHLIGHT (Notification navigation)
+───────────────────────────────────────────────────────── */
+
+.nl-comment {
+    transition: background-color var(--nl-dur-base) var(--nl-ease), border-color var(--nl-dur-base) var(--nl-ease), box-shadow var(--nl-dur-base) var(--nl-ease);
+}
+
+.nl-comment--highlight {
+    animation: nl-comment-highlight 2.8s ease forwards;
+}
+
+@keyframes nl-comment-highlight {
+
+    0% {
+        background: color-mix(in srgb, var(--nl-accent) 22%, transparent);
+        border-left: 4px solid var(--nl-accent);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--nl-accent) 20%, transparent);
+    }
+
+    70% {
+        background: color-mix(in srgb, var(--nl-accent) 10%, transparent);
+        border-left: 4px solid var(--nl-accent);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--nl-accent) 10%, transparent);
+    }
+
+    100% {
+        background: transparent;
+        border-left: 4px solid transparent;
+        box-shadow: 0 0 0 0 transparent;
+    }
+}

@@ -1,0 +1,80 @@
+﻿@model List<PostViewModel>
+@{
+    // Get the display name, prioritizing FullName, then falling back to UserName
+    string friendUsername = ViewBag.FriendFullName ?? ViewBag.FriendUserName ?? "Friend";
+    ViewData["Title"] = friendUsername + "'s wall";
+
+    // Map avatar and bio from the controller's ViewBag properties
+    string? friendAvatarUrl = ViewBag.FriendProfilePicture;
+    string? friendBio = ViewBag.FriendBio;
+
+    // ASP.NET Core Identity uses strings (GUIDs) for User IDs
+    string friendId = ViewBag.FriendUserId ?? string.Empty;
+
+    int postCount = ViewBag.PostCount ?? Model.Count;
+
+}
+
+    <div class="nl-friend-wall">
+        <a asp-controller="Friends" asp-action="Index" class="nl-friend-wall__back">
+            <i class="ph ph-arrow-left" aria-hidden="true"></i>
+            Back to friends
+        </a>
+
+        <section class="nl-friend-hero">
+            <span class="nl-friend-hero__avatar">
+                @if (!string.IsNullOrEmpty(friendAvatarUrl))
+                {
+                    <img src="@friendAvatarUrl" alt="@friendUsername" />
+                }
+                else
+                {
+                    <i class="ph ph-user" aria-hidden="true"></i>
+                }
+            </span>
+            <h1 class="nl-friend-hero__name">@friendUsername</h1>
+            @if (!string.IsNullOrEmpty(friendBio))
+            {
+                <p class="nl-friend-hero__bio">@friendBio</p>
+            }
+            <span class="nl-friend-hero__meta">@postCount post@(postCount == 1 ? "" : "s")</span>
+
+        <a asp-controller="Friends"
+           asp-action="RemoveFriend"
+           asp-route-friendId="@friendId"
+           class="nl-btn-outline">
+            <i class="ph ph-user-minus" aria-hidden="true"></i>
+            Unfriend
+        </a>
+        </section>
+
+        <section class="nl-friend-wall__posts">
+            @if (!Model.Any())
+            {
+                <div class="nl-friends-empty">
+                    <i class="ph ph-note-blank nl-friends-empty__icon" aria-hidden="true"></i>
+                    <p class="nl-friends-empty__text">@friendUsername hasn't posted anything yet.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var post in Model)
+                {
+                    @await Html.PartialAsync("_PostCard", post, new ViewDataDictionary(ViewData)
+                    {
+                        ["TargetController"] = "Friends"
+                    })
+                }
+            }
+        </section>
+    </div>
+
+@section Head {
+        <link rel="stylesheet" href="~/css/nillero-feed.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/nillero-friends.css" asp-append-version="true" />
+}
+
+@section Scripts {
+        <script src="~/js/nillero-friends.js" asp-append-version="true"></script>
+}
+

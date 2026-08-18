@@ -26,7 +26,7 @@ namespace Nillero.Infrastructure.Identity.Contexts
                 entity.Property(e => e.FirstName).IsRequired().HasMaxLength(60);
                 entity.Property(e => e.LastName).IsRequired().HasMaxLength(60);
                 entity.Property(e => e.Phone).IsRequired().HasMaxLength(20);
-                entity.Property(e => e.ProfilePicturePath).HasMaxLength(300);
+                entity.Property(e => e.ProfilePicturePath);
                 entity.Property(e => e.IsActive).IsRequired();
                 entity.Property(e => e.CreatedAt).IsRequired();
 

@@ -1,8 +1,52 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<PostViewModel>
+@{
+    ViewData["Title"] = "Your posts";
+    ViewData["ActiveNav"] = "home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="nl-page-header">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+        <h1 class="nl-page-header__title">Your posts</h1>
+        <a asp-controller="Home" asp-action="Create" class="nl-btn nl-btn--primary nl-btn--sm">
+            <i class="ph-fill ph-pencil-simple" aria-hidden="true"></i>
+            New post
+        </a>
+    </div>
 </div>
+
+<div class="nl-feed">
+
+    @if (Model == null || !Model.Any())
+    {
+        <!-- Empty state -->
+        <div class="nl-empty-state nl-reveal">
+            <div class="nl-empty-state__icon" aria-hidden="true">
+                <i class="ph ph-image-square"></i>
+            </div>
+            <h2 class="nl-empty-state__title">Nothing here yet</h2>
+            <p class="nl-empty-state__body">Your posts will appear here once you create them.</p>
+            <a asp-controller="Home" asp-action="Create" class="nl-btn nl-btn--primary">
+                Create your first post
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var post in Model)
+        {
+            @await Html.PartialAsync("_PostCard", post)
+        }
+    }
+
+</div>
+
+@section Head {
+    <link rel="stylesheet"
+          href="~/css/nillero-feed.css"
+          asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/nillero-feed.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,115 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="nl-auth-card">
+
+    <div class="nl-auth-card__header">
+        <h1 class="nl-auth-card__title">Welcome back</h1>
+        <p class="nl-auth-card__subtitle">Sign in to your Nillero account to continue.</p>
+    </div>
+
+    @* Unauthorized redirect notice *@
+    @if (ViewBag.UnauthorizedMessage != null)
+    {
+        <div class="nl-auth-notice" role="status">
+            <i class="ph ph-lock-simple" aria-hidden="true"></i>
+            <span>@ViewBag.UnauthorizedMessage</span>
+        </div>
+    }
+
+    @* POST error *@
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="nl-auth-error-banner" role="alert">
+            <i class="ph-fill ph-warning-circle" aria-hidden="true"></i>
+            <span>@ViewBag.ErrorMessage</span>
+        </div>
+    }
+
+    <form asp-controller="Login"
+          asp-action="Index"
+          asp-route-returnUrl="@ViewBag.ReturnUrl"
+          method="post"
+          novalidate>
+
+        @Html.AntiForgeryToken()
+
+        <div class="nl-field">
+            <label asp-for="UserName" class="nl-label">Username</label>
+            <input asp-for="UserName"
+                   class="nl-input @(ViewData.ModelState["UserName"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   type="text"
+                   autocomplete="username"
+                   placeholder="your_username"
+                   autofocus />
+            <span asp-validation-for="UserName" class="nl-field-error"></span>
+        </div>
+
+        <div class="nl-field">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                <label asp-for="Password" class="nl-label" style="margin-bottom:0;">Password</label>
+                <a asp-controller="Login" asp-action="ForgotPassword"
+                   class="nl-auth-link"
+                   style="font-size: var(--nl-size-xs);">
+                    Forgot password?
+                </a>
+            </div>
+            <div class="nl-input-group">
+                <input asp-for="Password"
+                       class="nl-input @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                       type="password"
+                       autocomplete="current-password"
+                       placeholder="••••••••"
+                       id="login-password" />
+                <button type="button"
+                        class="nl-input-group__toggle"
+                        aria-label="Toggle password visibility"
+                        data-target="login-password">
+                    <i class="ph ph-eye" id="login-password-icon" aria-hidden="true"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="nl-field-error"></span>
+        </div>
+
+        <div style="margin-top: 24px;">
+            <button type="submit" class="nl-btn nl-btn--primary nl-btn--lg" style="width:100%;">
+                Sign in
+            </button>
+        </div>
+
+    </form>
+
+    <div class="nl-auth-footer">
+        <p class="nl-auth-footer__text">
+            Don't have an account?
+            <a asp-controller="Login" asp-action="Register" class="nl-auth-link">Create one</a>
+        </p>
+    </div>
+
+</div>
+
+@section Head {
+    <link rel="stylesheet" href="~/css/nillero-auth.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Password visibility toggle
+        document.querySelectorAll('[data-target]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(this.dataset.target);
+                var icon  = document.getElementById(this.dataset.target + '-icon');
+                var isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                icon.className = isHidden ? 'ph ph-eye-slash' : 'ph ph-eye';
+                btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+            });
+        });
+    </script>
+}

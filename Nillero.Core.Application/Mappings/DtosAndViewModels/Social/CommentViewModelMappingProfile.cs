@@ -15,13 +15,12 @@ namespace Nillero.Core.Application.Mappings.DtosAndViewModels.Social
                  .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                  .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
-            // this mapping requires additional user data that is not present in CommentDto
             CreateMap<CommentDto, CommentViewModel>()
                 .ForMember(dest => dest.UserName, opt => opt.Ignore())
                 .ForMember(dest => dest.UserFullName, opt => opt.Ignore())
                 .ForMember(dest => dest.UserProfilePicture, opt => opt.Ignore())
-                .ForMember(dest => dest.IsOwner, opt => opt.Ignore())
-                .ForMember(dest => dest.Replies, opt => opt.Ignore());
+                .ForMember(dest => dest.IsOwner, opt => opt.Ignore());
+
         }
     }
 }

@@ -16,6 +16,6 @@ namespace Nillero.Core.Application.Interfaces.User
         Task<UserDto?> GetUserById(string id);
         Task<RegisterResponseDto> RegisterUser(SaveUserDto saveDto, string origin);
         Task<UserResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
-        Task SingOutAsync();
+        Task SignOutAsync();
     }
 }

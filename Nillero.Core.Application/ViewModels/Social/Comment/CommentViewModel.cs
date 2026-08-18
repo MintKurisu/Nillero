@@ -9,6 +9,7 @@
         public required string UserFullName { get; set; }
         public string? UserProfilePicture { get; set; }
         public int? ParentCommentId { get; set; }
+        public int? RootCommentId { get; set; }
         public required string Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

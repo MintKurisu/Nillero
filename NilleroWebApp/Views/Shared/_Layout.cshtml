@@ -1,50 +1,298 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NilleroWebApp</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] — Nillero</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/NilleroWebApp.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/nillero.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/nillero-notifications.css" asp-append-version="true" />
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <meta name="csrf-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    }
+
+    @await RenderSectionAsync("Head", required: false)
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">NilleroWebApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+<body class="nillero-body">
+
+    <header class="nl-topbar" id="nl-topbar" role="banner">
+        <div class="nl-topbar__inner">
+
+            <div class="nl-topbar__left">
+                <button class="nl-sidebar-toggle"
+                        id="nl-sidebar-toggle"
+                        aria-label="Open menu"
+                        aria-expanded="false"
+                        aria-controls="nl-sidebar">
+                    <i class="ph ph-list"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+
+                <a asp-controller="Home" asp-action="Index" class="nl-logo" aria-label="Nillero — Home">
+                    <span class="nl-logo__mark" aria-hidden="true">N</span>
+                    <span class="nl-logo__wordmark">illero</span>
+                </a>
+            </div>
+
+            <div class="nl-topbar__center">
+                <div class="nl-search" role="search" id="nl-search-wrapper">
+                    <i class="ph ph-magnifying-glass nl-search__icon" aria-hidden="true"></i>
+                    <input type="search"
+                           class="nl-search__input"
+                           id="nl-search-input"
+                           placeholder="Search people, posts…"
+                           aria-label="Search Nillero"
+                           aria-expanded="false"
+                           aria-controls="nl-search-dropdown"
+                           aria-autocomplete="list"
+                           autocomplete="off" />
+
+                    <div class="nl-search-dropdown" id="nl-search-dropdown" hidden>
+                        <div id="nl-search-results"></div>
+                    </div>
                 </div>
             </div>
-        </nav>
+
+            <div class="nl-topbar__right">
+
+                <div class="nl-topbar-action nl-notif-wrapper" id="nl-notif-wrapper">
+                    <button class="nl-icon-btn"
+                            aria-label="Notifications"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            id="nl-notif-btn">
+                        <i class="ph ph-bell" aria-hidden="true"></i>
+                        <span class="nl-badge" id="nl-notif-badge" aria-live="polite" hidden>0</span>
+                    </button>
+
+                    <div class="nl-notif-dropdown" id="nl-notif-dropdown" hidden>
+                        <div id="nl-notif-dropdown-content">
+                            <p class="nl-notif-dropdown__empty">Loading…</p>
+                        </div>
+                    </div>
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="nl-topbar-action nl-avatar-menu" id="nl-avatar-menu">
+                        <button class="nl-avatar-btn"
+                                aria-label="Profile menu"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                id="nl-avatar-trigger">
+
+                            <img src="@(string.IsNullOrWhiteSpace(ViewData["UserAvatarUrl"]?.ToString()) ? "/img/avatar-placeholder.webp" : ViewData["UserAvatarUrl"])"
+                                 alt="Your profile picture"
+                                 class="nl-avatar nl-avatar--sm"
+                                 width="32"
+                                 height="32"
+                                 loading="lazy" />
+                        </button>
+
+                        <div class="nl-dropdown" id="nl-avatar-dropdown" role="menu" aria-labelledby="nl-avatar-trigger" hidden>
+                            <div class="nl-dropdown__header">
+                                <span class="nl-dropdown__name">@User.Identity?.Name</span>
+                                <span class="nl-dropdown__handle">@ViewData["UserHandle"]</span>
+                            </div>
+                            <div class="nl-dropdown__divider" role="separator"></div>
+                            <a asp-controller="Profile" asp-action="Index"
+                               class="nl-dropdown__item" role="menuitem">
+                                <i class="ph ph-user" aria-hidden="true"></i> My Profile
+                            </a>
+                            <a asp-controller="Profile" asp-action="Index"
+                               class="nl-dropdown__item" role="menuitem">
+                                <i class="ph ph-gear" aria-hidden="true"></i> Settings
+                            </a>
+                            <div class="nl-dropdown__divider" role="separator"></div>
+
+                            <form asp-controller="Login" asp-action="Logout" method="post" style="display: block; margin: 0; padding: 0;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="nl-dropdown__item nl-dropdown__item--danger" role="menuitem"
+                                        style="width: 100%; text-align: left; background: none; border: none; font: inherit;">
+                                    <i class="ph ph-sign-out" aria-hidden="true"></i> Log Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="Login" asp-action="Index" class="nl-btn nl-btn--sm nl-btn--primary">
+                        Sign In
+                    </a>
+                }
+            </div>
+        </div>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="nl-shell" id="nl-shell">
+
+        <div class="nl-sidebar-overlay" id="nl-sidebar-overlay" aria-hidden="true"></div>
+
+        <nav class="nl-sidebar" id="nl-sidebar" role="navigation" aria-label="Main navigation">
+
+            <ul class="nl-nav" role="list">
+                <li class="nl-nav__item">
+                    <a asp-controller="Home" asp-action="Index"
+                       class="nl-nav__link @(ViewData["ActiveNav"]?.ToString() == "home" ? "is-active" : "")"
+                       aria-current="@(ViewData["ActiveNav"]?.ToString() == "home" ? "page" : null)">
+                        <i class="ph-fill ph-house nl-nav__icon" aria-hidden="true"></i>
+                        <span class="nl-nav__label">Home</span>
+                    </a>
+                </li>
+                <li class="nl-nav__item">
+                    <a asp-controller="Friends" asp-action="Index"
+                       class="nl-nav__link @(ViewData["ActiveNav"]?.ToString() == "friends" ? "is-active" : "")"
+                       aria-current="@(ViewData["ActiveNav"]?.ToString() == "friends" ? "page" : null)">
+                        <i class="ph ph-users nl-nav__icon" aria-hidden="true"></i>
+                        <span class="nl-nav__label">Friends</span>
+                    </a>
+                </li>
+                <li class="nl-nav__item">
+                    <a asp-controller="FriendRequest" asp-action="Index"
+                       class="nl-nav__link @(ViewData["ActiveNav"]?.ToString() == "friendrequests" ? "is-active" : "")"
+                       aria-current="@(ViewData["ActiveNav"]?.ToString() == "friendrequests" ? "page" : null)">
+                        <i class="ph ph-user-plus nl-nav__icon" aria-hidden="true"></i>
+                        <span class="nl-nav__label">Requests</span>
+                    </a>
+                </li>
+                <li class="nl-nav__item">
+                    <a asp-controller="Notification" asp-action="Index"
+                       class="nl-nav__link @(ViewData["ActiveNav"]?.ToString() == "notifications" ? "is-active" : "")"
+                       aria-current="@(ViewData["ActiveNav"]?.ToString() == "notifications" ? "page" : null)">
+                        <i class="ph ph-bell nl-nav__icon" aria-hidden="true"></i>
+                        <span class="nl-nav__label">Notifications</span>
+                        <span class="nl-badge nl-badge--sidebar" id="nl-notif-badge-sidebar" hidden>0</span>
+                    </a>
+                </li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nl-nav__item">
+                        <a asp-controller="Profile" asp-action="Index"
+                           class="nl-nav__link @(ViewData["ActiveNav"]?.ToString() == "profile" ? "is-active" : "")"
+                           aria-current="@(ViewData["ActiveNav"]?.ToString() == "profile" ? "page" : null)">
+                            <i class="ph ph-user nl-nav__icon" aria-hidden="true"></i>
+                            <span class="nl-nav__label">My Profile</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="nl-sidebar__footer">
+                    <a asp-controller="Home" asp-action="Create" class="nl-btn nl-btn--primary nl-btn--compose">
+                        <i class="ph-fill ph-pencil-simple" aria-hidden="true"></i>
+                        <span>New post</span>
+                    </a>
+                </div>
+            }
+        </nav>
+
+        <main class="nl-main" id="nl-main" role="main">
+            <div class="nl-toast-region" id="nl-toast-region" aria-live="polite" aria-atomic="false"></div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="nl-toast nl-toast--success is-visible" role="status">
+                    <i class="ph-fill ph-check-circle" aria-hidden="true"></i>
+                    <span>@TempData["Success"]</span>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="nl-toast nl-toast--error is-visible" role="alert">
+                    <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
+                    <span>@TempData["Error"]</span>
+                </div>
+            }
+
             @RenderBody()
         </main>
+
+        @if (IsSectionDefined("RightPanel") || ViewData["HideRightPanel"] == null)
+        {
+            <aside class="nl-right-panel" id="nl-right-panel" aria-label="Side panel">
+                @if (IsSectionDefined("RightPanel"))
+                {
+                    @await RenderSectionAsync("RightPanel", required: false)
+                }
+                else
+                {
+                    <div class="nl-panel-block">
+                        <h2 class="nl-panel-block__title">People you may know</h2>
+                        <div class="nl-panel-block__body" id="nl-suggestions-slot">
+                            <p class="nl-text-muted">Loading suggestions…</p>
+                        </div>
+                    </div>
+                }
+            </aside>
+        }
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - NilleroWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <nav class="nl-bottom-nav" role="navigation" aria-label="Mobile navigation">
+        <a asp-controller="Home" asp-action="Index"
+           class="nl-bottom-nav__item @(ViewData["ActiveNav"]?.ToString() == "home" ? "is-active" : "")"
+           aria-label="Home">
+            <i class="ph-fill ph-house" aria-hidden="true"></i>
+        </a>
+        <a asp-controller="Friends" asp-action="Index"
+           class="nl-bottom-nav__item @(ViewData["ActiveNav"]?.ToString() == "friends" ? "is-active" : "")"
+           aria-label="Friends">
+            <i class="ph ph-users" aria-hidden="true"></i>
+        </a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Home" asp-action="Create"
+               class="nl-bottom-nav__item nl-bottom-nav__item--compose"
+               aria-label="New post">
+                <i class="ph-fill ph-plus" aria-hidden="true"></i>
+            </a>
+        }
+        <a asp-controller="Notification" asp-action="Index"
+           class="nl-bottom-nav__item @(ViewData["ActiveNav"]?.ToString() == "notifications" ? "is-active" : "")"
+           aria-label="Notifications">
+            <i class="ph ph-bell" aria-hidden="true"></i>
+            <span class="nl-badge nl-badge--bottom" id="nl-notif-badge-bottom" hidden>0</span>
+        </a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Profile" asp-action="Index"
+               class="nl-bottom-nav__item @(ViewData["ActiveNav"]?.ToString() == "profile" ? "is-active" : "")"
+               aria-label="My Profile">
+                <i class="ph ph-user" aria-hidden="true"></i>
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Login" asp-action="Index"
+               class="nl-bottom-nav__item"
+               aria-label="Sign In">
+                <i class="ph ph-sign-in" aria-hidden="true"></i>
+            </a>
+        }
+    </nav>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/nillero.js" asp-append-version="true"></script>
+    <script src="~/js/nillero-search.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/nillero-notification.js" asp-append-version="true"></script>
+    <script src="~/js/nillero-suggestions.js" asp-append-version="true"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web@@2.1.1/src/index.js" defer></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

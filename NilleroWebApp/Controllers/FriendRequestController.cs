@@ -1,23 +1,23 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Nillero.Core.Application.Dtos.Social;
 using Nillero.Core.Application.Interfaces.Social;
 using Nillero.Core.Application.Interfaces.User;
 using Nillero.Core.Application.ViewModels.Social.FriendRequest;
+using Nillero.Core.Application.ViewModels.Social.Friendship;
 using Nillero.Core.Domain.Common.Enum.Social;
 using Nillero.Infrastructure.Identity.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace NilleroWebApp.Controllers
 {
     [Authorize]
-    public class FriendRequestController : Controller 
+    public class FriendRequestController : BaseController
     {
         private readonly IFriendRequestService _friendRequestService; 
         private readonly IFriendshipService _friendshipService;
         private readonly IAccountServicesForWebApp _accountService;
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
 
         public FriendRequestController(
@@ -25,12 +25,11 @@ namespace NilleroWebApp.Controllers
             IFriendshipService friendshipService,
             IAccountServicesForWebApp accountService,
             UserManager<ApplicationUser> userManager,
-            IMapper mapper)
+            IMapper mapper) : base(userManager)
         {
             _friendRequestService = friendRequestService;
             _friendshipService = friendshipService;
             _accountService = accountService;
-            _userManager = userManager;
             _mapper = mapper;
         }
 
@@ -42,6 +41,8 @@ namespace NilleroWebApp.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
+
+            ViewData["ActiveNav"] = "friendrequests";
 
             var viewModel = new FriendRequestsPageViewModel();
 
@@ -237,7 +238,6 @@ namespace NilleroWebApp.Controllers
         public async Task<IActionResult> SendRequest(string selectedUserId)
         {
             ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
-
             if (currentUser == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -245,14 +245,14 @@ namespace NilleroWebApp.Controllers
 
             if (string.IsNullOrEmpty(selectedUserId))
             {
-                TempData["ErrorMessage"] = "You must select a user..";
+                TempData["Error"] = "You must select a user.";
                 return RedirectToAction("SelectUser");
             }
 
             var canSend = await _friendRequestService.CanSendRequestAsync(currentUser.Id, selectedUserId);
             if (!canSend)
             {
-                TempData["ErrorMessage"] = "A friend request cannot be sent to this user.";
+                TempData["Error"] = "A friend request cannot be sent to this user.";
                 return RedirectToAction("SelectUser");
             }
 
@@ -265,9 +265,45 @@ namespace NilleroWebApp.Controllers
             };
 
             await _friendRequestService.AddAsync(requestDto);
-
-            TempData["SuccessMessage"] = "Friend request sent successfully.";
+            TempData["Success"] = "Friend request sent successfully.";
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Suggestions()
+        {
+            ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+                return Unauthorized();
+
+            var allUsers = await _accountService.GetAllUser(true, null);
+            var suggestions = new List<FriendSuggestionViewModel>();
+
+            foreach (var user in allUsers)
+            {
+                if (user.Id == currentUser.Id) continue;
+
+                var areFriends = await _friendshipService.AreFriendsAsync(currentUser.Id, user.Id);
+                if (areFriends) continue;
+
+                var canSend = await _friendRequestService.CanSendRequestAsync(currentUser.Id, user.Id);
+                if (!canSend) continue;
+
+                var mutualCount = await _friendshipService.GetCommonFriendsCountAsync(currentUser.Id, user.Id);
+
+                suggestions.Add(new FriendSuggestionViewModel
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName ?? "",
+                    FullName = $"{user.FirstName} {user.LastName}",
+                    ProfilePicturePath = user.ProfilePicturePath,
+                    MutualFriendsCount = mutualCount
+                });
+
+                if (suggestions.Count >= 5) break;
+            }
+
+            return Json(suggestions);
         }
 
         #region Private Methods

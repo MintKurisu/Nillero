@@ -1,0 +1,54 @@
+﻿@model FriendViewModel
+@{
+    // Title of the confirmation page
+    ViewData["Title"] = "Remove friend";
+}
+
+<div class="nl-confirm-page">
+    <div class="nl-confirm-card">
+        <span class="nl-confirm-card__avatar">
+            @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+            {
+                <img src="@Model.ProfilePicture" alt="@Model.UserName" />
+            }
+            else
+            {
+                <i class="ph ph-user" aria-hidden="true"></i>
+            }
+        </span>
+
+        @* Confirming action using the friend's actual username *@
+        <h1 class="nl-confirm-card__title">Are you sure you want to unfriend @Model.UserName?</h1>
+        <p class="nl-confirm-card__subtitle">
+            They won't be notified, but you'll no longer see each other's posts in your feeds.
+        </p>
+
+        <div class="nl-confirm-card__actions">
+            @* Cancel returns the user to the safe zone (Friends List) *@
+            <a asp-controller="Friends" asp-action="Index" class="nl-btn-outline">Cancel</a>
+
+            @* Form points directly to the POST action that handles the actual DB deletion *@
+            <form asp-controller="Friends"
+                  asp-action="RemoveFriendConfirmed"
+                  asp-route-friendId="@Model.UserId"
+                  method="post">
+
+                @* Anti-forgery token is required by the [ValidateAntiForgeryToken] attribute in the controller *@
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="nl-btn-danger">
+                    Unfriend
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Head {
+    <link rel="stylesheet" href="~/css/nillero-feed.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/nillero-friends.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/nillero-friends.js" asp-append-version="true"></script>
+}

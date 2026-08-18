@@ -4,33 +4,37 @@ using Nillero.Core.Application.Interfaces.User;
 using Nillero.Core.Application.ViewModels.Social.User;
 using Nillero.Core.Domain.Common.Enum;
 using Nillero.Infrastructure.Identity.Entities;
-using NilleroWebApp.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Nillero.Core.Application.Interfaces.Storage;
 
 namespace NilleroWebApp.Controllers
 {
     [Authorize]
-    public class ProfileController : Controller
+    public class ProfileController : BaseController
     {
         private readonly IAccountServicesForWebApp _accountService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStorageService _storageService;
         private readonly IMapper _mapper;
-
+        private readonly SignInManager<ApplicationUser> _signInManager;
         public ProfileController(
             IAccountServicesForWebApp accountService,
             UserManager<ApplicationUser> userManager,
-            IMapper mapper)
+            SignInManager<ApplicationUser> signInManager,
+            IStorageService storageService,
+            IMapper mapper) : base(userManager)
         {
             _accountService = accountService;
-            _userManager = userManager;
+            _signInManager = signInManager;
+            _storageService = storageService;
             _mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
         {
             ApplicationUser? currentUser = await _userManager.GetUserAsync(User);
+            Console.WriteLine($"[GET] ProfilePicturePath: {currentUser?.ProfilePicturePath}");
 
             if (currentUser == null)
             {
@@ -72,10 +76,20 @@ namespace NilleroWebApp.Controllers
                 return View(vm);
 
             string? profilePicturePath = vm.CurrentProfilePicturePath;
+
             if (vm.ProfilePicture != null)
             {
-                profilePicturePath = FileManager.Upload(vm.ProfilePicture, currentUser.Id, "Users", true, vm.CurrentProfilePicturePath ?? "");
+                string newPath = await _storageService.UploadAsync(vm.ProfilePicture, "users", currentUser.Id);
+
+                if (!string.IsNullOrWhiteSpace(currentUser.ProfilePicturePath))
+                {
+                    await _storageService.DeleteAsync(currentUser.ProfilePicturePath);
+                }
+
+                profilePicturePath = newPath;
             }
+
+            Console.WriteLine($"[Profile] profilePicturePath going into DTO: {profilePicturePath}");
 
             var rolesList = await _userManager.GetRolesAsync(currentUser);
             string currentRole = rolesList.FirstOrDefault() ?? Roles.User.ToString();
@@ -88,7 +102,7 @@ namespace NilleroWebApp.Controllers
                 LastName = vm.LastName,
                 Email = currentUser.Email ?? "",
                 Phone = vm.Phone,
-                Password = vm.Password ?? "", 
+                Password = vm.Password ?? "",
                 ProfilePicturePath = profilePicturePath,
                 Role = currentRole,
                 IsActive = currentUser.IsActive
@@ -98,12 +112,20 @@ namespace NilleroWebApp.Controllers
 
             var response = await _accountService.EditUser(dto, origin, false);
 
+            Console.WriteLine($"[Profile] EditUser HasError: {response.HasError}");
+            /*if (response.HasError)
+                Console.WriteLine($"[Profile] Errors: {string.Join(", ", response.Errors)}");*/
+
             if (response.HasError)
             {
                 ViewBag.hasError = true;
                 ViewBag.Errors = response.Errors;
                 return View(vm);
             }
+
+            // Forzar refresh del security stamp para invalidar la cookie vieja
+            await _userManager.UpdateSecurityStampAsync(currentUser);
+            await _signInManager.RefreshSignInAsync(currentUser);
 
             TempData["SuccessMessage"] = "Profile updated successfully.";
             return RedirectToAction("Index");

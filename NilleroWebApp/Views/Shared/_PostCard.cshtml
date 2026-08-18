@@ -1,0 +1,261 @@
+﻿@model PostViewModel
+@{
+    bool hasImage = Model.Type == PostType.Image && !string.IsNullOrWhiteSpace(Model.MediaPath);
+    bool hasVideo = Model.Type == PostType.Video && !string.IsNullOrWhiteSpace(Model.YouTubeUrl);
+    bool likeActive = Model.UserReaction == ReactionType.Like;
+    bool dislikeActive = Model.UserReaction == ReactionType.Dislike;
+
+    string targetController = ViewData["TargetController"] as string ?? "Home";
+
+    string returnUrl = Context.Request.Path + Context.Request.QueryString;
+
+    string? youtubeId = null;
+    if (hasVideo && Model.YouTubeUrl != null)
+    {
+        var uri = new Uri(Model.YouTubeUrl);
+        var qs = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        youtubeId = qs["v"] ?? uri.Segments.LastOrDefault()?.TrimEnd('/');
+    }
+
+    int totalComments = CountAllComments(Model.Comments);
+
+    string commentLabel = totalComments == 0 ? "No comments"
+                        : totalComments == 1 ? "1 comment"
+                        : $"{totalComments} comments";
+}
+
+<article class="nl-feed-item nl-post-card nl-reveal"
+         id="post-@Model.Id"
+         aria-label="Post by @Model.UserFullName">
+
+    <!-- Header: avatar + meta + owner actions -->
+    <div class="nl-post-card__header">
+
+        <a asp-controller="Profile"
+           asp-action="Index"
+           asp-route-username="@Model.UserName"
+           class="nl-post-card__avatar-link"
+           aria-label="View @Model.UserFullName's profile">
+            @if (!string.IsNullOrWhiteSpace(Model.UserProfilePicture))
+            {
+                <img src="@Model.UserProfilePicture"
+                     alt="@Model.UserFullName"
+                     class="nl-avatar nl-avatar--md"
+                     loading="lazy" />
+            }
+            else
+            {
+                <div class="nl-avatar nl-avatar--md nl-avatar--fallback" aria-hidden="true">
+                    <i class="ph-fill ph-user"></i>
+                </div>
+            }
+        </a>
+
+        <div class="nl-post-card__meta">
+            <a asp-controller="Profile"
+               asp-action="Index"
+               asp-route-username="@Model.UserName"
+               class="nl-post-card__fullname">
+                @Model.UserFullName
+            </a>
+            <span class="nl-post-card__handle">
+                @@@Model.UserName
+                <span aria-hidden="true"> · </span>
+                <time datetime="@Model.CreatedAt.ToString("o")"
+                      title="@Model.CreatedAt.ToString("MMMM d, yyyy 'at' h:mm tt")">
+                    @GetRelativeTime(Model.CreatedAt)
+                </time>
+            </span>
+        </div>
+
+        @if (Model.IsOwner)
+        {
+            <div class="nl-post-card__owner-actions">
+                <a asp-controller="Home"
+                   asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="nl-icon-btn"
+                   aria-label="Edit this post">
+                    <i class="ph ph-pencil-simple" aria-hidden="true"></i>
+                </a>
+                <a asp-controller="Home"
+                   asp-action="Delete"
+                   asp-route-id="@Model.Id"
+                   class="nl-icon-btn nl-icon-btn--danger"
+                   aria-label="Delete this post">
+                    <i class="ph ph-trash" aria-hidden="true"></i>
+                </a>
+            </div>
+        }
+
+    </div>
+
+    <!-- Text content -->
+    @if (!string.IsNullOrWhiteSpace(Model.Content))
+    {
+        <div class="nl-post-card__content">
+            <p>@Model.Content</p>
+        </div>
+    }
+
+    <!-- Media -->
+    @if (hasImage)
+    {
+        <div class="nl-post-card__media">
+            <img src="@Model.MediaPath"
+                 alt="Image shared by @Model.UserFullName"
+                 class="nl-post-card__image"
+                 loading="lazy" />
+        </div>
+    }
+    else if (hasVideo && youtubeId != null)
+    {
+        <div class="nl-post-card__media nl-post-card__media--video">
+            <iframe src="https://www.youtube.com/embed/@youtubeId"
+                    title="Video shared by @Model.UserFullName"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    loading="lazy"
+                    class="nl-post-card__embed">
+            </iframe>
+        </div>
+    }
+
+    <!-- Reaction bar -->
+    <div class="nl-post-card__reactions" role="group" aria-label="Reactions for this post">
+
+        <form asp-controller="@targetController" asp-action="ToggleReaction" method="post" class="nl-reaction-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <input type="hidden" name="postId" value="@Model.Id" />
+            <input type="hidden" name="reactionType" value="like" />
+            <button type="submit"
+                    class="nl-reaction-btn @(likeActive ? "is-active is-active--like" : "")"
+                    aria-label="Like — @Model.LikeCount"
+                    aria-pressed="@likeActive.ToString().ToLower()">
+                <i class="@(likeActive ? "ph-fill ph-thumbs-up" : "ph ph-thumbs-up")" aria-hidden="true"></i>
+                <span class="nl-reaction-btn__count">@Model.LikeCount</span>
+            </button>
+        </form>
+
+        <form asp-controller="@targetController" asp-action="ToggleReaction" method="post" class="nl-reaction-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <input type="hidden" name="postId" value="@Model.Id" />
+            <input type="hidden" name="reactionType" value="dislike" />
+            <button type="submit"
+                    class="nl-reaction-btn @(dislikeActive ? "is-active is-active--dislike" : "")"
+                    aria-label="Dislike — @Model.DislikeCount"
+                    aria-pressed="@dislikeActive.ToString().ToLower()">
+                <i class="@(dislikeActive ? "ph-fill ph-thumbs-down" : "ph ph-thumbs-down")" aria-hidden="true"></i>
+                <span class="nl-reaction-btn__count">@Model.DislikeCount</span>
+            </button>
+        </form>
+
+        <span class="nl-reaction-comment-count" aria-label="@totalComments comments">
+            <i class="ph ph-chat-circle" aria-hidden="true"></i>
+            <span>@totalComments</span>
+        </span>
+
+    </div>
+
+    <!-- Comments section -->
+    @{
+        var highlightId = ViewData["HighlightCommentId"] as int?;
+        bool shouldOpen =
+        highlightId.HasValue &&
+        ContainsComment(Model.Comments, highlightId.Value);
+    }
+    <details class="nl-comments-section"
+             id="comments-post-@Model.Id"
+             @(shouldOpen ? "open" : "")>
+        <summary class="nl-comments-toggle">
+            <i class="ph ph-caret-right nl-comments-toggle__caret" aria-hidden="true"></i>
+            <span>@commentLabel</span>
+        </summary>
+
+        <div class="nl-comments-body">
+            <!-- Add comment -->
+            <form asp-controller="@targetController" asp-action="AddComment" method="post" class="nl-add-comment-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <input type="hidden" name="PostId" value="@Model.Id" />
+                <input type="hidden" name="ParentCommentId" value="" />
+                <input type="hidden" name="RootCommentId" value="" />
+                <div class="nl-add-comment-form__inner">
+                    <textarea name="Content"
+                              class="nl-input nl-add-comment-form__input"
+                              placeholder="Write a comment…"
+                              rows="1"
+                              maxlength="500"
+                              aria-label="Write a comment"
+                              required></textarea>
+                    <button type="submit" class="nl-btn nl-btn--primary nl-btn--sm" aria-label="Post comment">
+                        <i class="ph-fill ph-paper-plane-tilt" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Comment list -->
+            @if (Model.Comments != null && Model.Comments.Any())
+            {
+                <div class="nl-comment-list" role="list">
+                    @foreach (var comment in Model.Comments)
+                    {
+                        @await Html.PartialAsync("_Comment", comment,
+                        new ViewDataDictionary(ViewData)
+                        {
+                            ["TargetController"] = targetController,
+                            ["ReturnUrl"] = returnUrl
+                        })
+                    }
+                </div>
+            }
+        </div>
+    </details>
+
+</article>
+
+@functions {
+    static string GetRelativeTime(DateTime utc)
+    {
+        var delta = DateTime.UtcNow - utc;
+        if (delta.TotalSeconds < 60) return "just now";
+        if (delta.TotalMinutes < 60) return $"{(int)delta.TotalMinutes}m ago";
+        if (delta.TotalHours < 24) return $"{(int)delta.TotalHours}h ago";
+        if (delta.TotalDays < 7) return $"{(int)delta.TotalDays}d ago";
+        return utc.ToString("MMM d");
+    }
+
+    static int CountAllComments(List<CommentViewModel>? comments)
+    {
+        if (comments == null) return 0;
+        int count = 0;
+        foreach (var c in comments)
+        {
+            count++;
+            count += CountAllComments(c.Replies);
+        }
+        return count;
+    }
+}
+
+@functions
+{
+    static bool ContainsComment(IEnumerable<CommentViewModel>? comments, int id)
+    {
+        if (comments == null)
+            return false;
+
+        foreach (var comment in comments)
+        {
+            if (comment.Id == id)
+                return true;
+
+            if (ContainsComment(comment.Replies, id))
+                return true;
+        }
+
+        return false;
+    }
+}

@@ -1,5 +1,4 @@
 ﻿using Nillero.Core.Domain.Entities.Social;
-using Nillero.Infrastructure.Identity.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

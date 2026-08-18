@@ -1,0 +1,74 @@
+﻿@model List<NotificationViewModel>
+@{
+    ViewData["Title"] = "Notifications";
+    var unread = Model.Where(n => !n.IsRead).ToList();
+    var read = Model.Where(n => n.IsRead).ToList();
+}
+
+<!--  <link rel="stylesheet" href="~/css/nillero-notifications.css" /> -->
+
+<div class="nl-notif-page">
+    <header class="nl-notif-page__header">
+        <h1 class="nl-notif-page__title">Notifications</h1>
+        <div class="nl-notif-page__actions">
+            @if (unread.Count > 0)
+            {
+                <form asp-controller="Notification" asp-action="MarkAllAsRead" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nl-btn-text">Mark all as read</button>
+                </form>
+            }
+            @if (Model.Any())
+            {
+                <button class="nl-btn-text nl-btn-text--danger"
+                        id="nl-clear-all-btn"
+                        type="button">
+                    Clear all
+                </button>
+            }
+        </div>
+    </header>
+
+    @if (!Model.Any())
+    {
+        <div class="nl-notif-empty">
+            <i class="ph ph-bell-slash nl-notif-empty__icon" aria-hidden="true"></i>
+            <p class="nl-notif-empty__text">You're all caught up. New activity will show up here.</p>
+        </div>
+    }
+    else
+    {
+        if (unread.Count > 0)
+        {
+            <section class="nl-notif-section" aria-label="Unread notifications">
+                <h2 class="nl-notif-section__label">New</h2>
+                <ul class="nl-notif-list">
+                    @foreach (var n in unread)
+                    {
+                        @await Html.PartialAsync("_NotificationItem", n)
+                    }
+                </ul>
+            </section>
+        }
+
+        if (read.Count > 0)
+        {
+            <section class="nl-notif-section" aria-label="Earlier notifications">
+                <h2 class="nl-notif-section__label">Earlier</h2>
+                <ul class="nl-notif-list">
+                    @foreach (var n in read)
+                    {
+                        @await Html.PartialAsync("_NotificationItem", n)
+                    }
+                </ul>
+            </section>
+        }
+    }
+</div>
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <script src="~/js/nillero-notification.js"></script>
+}

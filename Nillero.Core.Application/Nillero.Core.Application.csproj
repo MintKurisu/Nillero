@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.11" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.11" />
